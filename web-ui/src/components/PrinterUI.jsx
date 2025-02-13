@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, Settings, History, Printer, Pause, Square } from 'lucide-react';
+import { ArrowLeft, Upload, Settings, History, Printer, Pause, Square, Clock } from 'lucide-react';
 import MOSLogo from '../assets/MOS.png';
 import PrinterImage from '../assets/Printer.png';
 
 const PrinterUI = () => {
   const [selectedView, setSelectedView] = useState('home');
-  const [sliderValue, setSliderValue] = useState(50);
-  const [printTime, setPrintTime] = useState('30 Min');
+  const [sliderValue, setSliderValue] = useState(2); // Middle position (0-4)
   
   // Add useEffect to handle viewport height
   useEffect(() => {
@@ -90,72 +89,85 @@ const PrinterUI = () => {
     </ResponsiveContainer>
   );
 
-  const PrintView = () => (
-    <ResponsiveContainer>
-      {/* Back button */}
-      <button 
-        onClick={() => setSelectedView('home')}
-        className="mb-4 p-2 hover:bg-gray-100 rounded-full"
-      >
-        <ArrowLeft className="w-6 h-6" />
-      </button>
+  const formatTime = (ms) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
 
-      <div className="flex-1 flex flex-col">
-        <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
-          <img 
-            src="/api/placeholder/256/256" 
-            alt="Print Preview" 
-            className="w-full h-full object-contain p-4"
-          />
-        </div>
-        
-        <div className="text-lg mb-2">
-          Benchy.gcode
-          <div className="text-sm text-gray-500">50ml</div>
-        </div>
-        
-        <div className="flex items-center justify-center mb-6">
-          <div className="text-2xl">{printTime}</div>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="flex justify-between text-sm text-gray-500">
-            <span>speed</span>
-            <span>precision</span>
+  const calculateAdjustedTime = (baseTimeMs, sliderPosition) => {
+    const multipliers = [2, 1.5, 1, 1/1.5, 0.5];
+    return baseTimeMs * multipliers[sliderPosition];
+  };
+
+  const PrintView = () => {
+    // Local state for print view
+    const [basePrintTimeMs, setBasePrintTimeMs] = useState(30 * 60 * 1000); // 30 minutes in ms
+    const adjustedTime = calculateAdjustedTime(basePrintTimeMs, sliderValue);
+
+    return (
+      <ResponsiveContainer title="Print Settings">
+        <div className="flex-1 flex flex-col">
+          <div className="w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg mb-6 flex items-center justify-center">
+            <img 
+              src="/api/placeholder/256/256" 
+              alt="Print Preview" 
+              className="w-full h-full object-contain p-4"
+            />
           </div>
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
-            value={sliderValue}
-            onChange={(e) => setSliderValue(e.target.value)}
-            className="w-full"
-          />
+          
+          <div className="text-lg mb-2 text-gray-800 dark:text-gray-200">
+            Benchy.gcode
+            <div className="text-sm text-gray-500 dark:text-gray-400">50ml</div>
+          </div>
+          
+          <div className="flex items-center justify-center mb-6 gap-2">
+            <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <div className="text-2xl text-gray-800 dark:text-gray-200">
+              {formatTime(adjustedTime)}
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+              <span>precision</span>
+              <span>speed</span>
+            </div>
+            <div className="flex justify-between px-1">
+              {[0, 1, 2, 3, 4].map((point) => (
+                <div key={point} className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+              ))}
+            </div>
+            <input 
+              type="range" 
+              min="0" 
+              max="4" 
+              value={sliderValue}
+              step="1"
+              onChange={(e) => setSliderValue(parseInt(e.target.value))}
+              className="w-full"
+            />
+          </div>
+          
+          <button 
+            onClick={() => setSelectedView('status')}
+            className="mt-auto w-full bg-gray-200 dark:bg-gray-800 rounded-lg py-3 flex items-center justify-center gap-2 text-gray-800 dark:text-gray-200"
+          >
+            <Printer className="w-5 h-5" />
+            Print
+          </button>
         </div>
-        
-        <button 
-          onClick={() => setSelectedView('status')}
-          className="mt-auto w-full bg-gray-200 rounded-lg py-3 flex items-center justify-center gap-2"
-        >
-          <Printer className="w-5 h-5" />
-          Print
-        </button>
-      </div>
-    </ResponsiveContainer>
-  );
+      </ResponsiveContainer>
+    );
+  };
 
   const StatusView = () => (
-    <ResponsiveContainer>
-      {/* Back button */}
-      <button 
-        onClick={() => setSelectedView('print')}
-        className="mb-4 p-2 hover:bg-gray-100 rounded-full"
-      >
-        <ArrowLeft className="w-6 h-6" />
-      </button>
-
+    <ResponsiveContainer title="Printing">
       <div className="flex-1 flex flex-col">
-        <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
+        <div className="w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg mb-6 flex items-center justify-center">
           <img 
             src="/api/placeholder/256/256" 
             alt="Print Status" 
@@ -163,25 +175,25 @@ const PrinterUI = () => {
           />
         </div>
         
-        <div className="text-lg">Benchy.gcode</div>
+        <div className="text-lg text-gray-800 dark:text-gray-200">Benchy.gcode</div>
         
         <div className="flex gap-4 mt-4">
-          <button className="flex-1 bg-gray-200 rounded-lg py-3 flex items-center justify-center">
+          <button className="flex-1 bg-gray-200 dark:bg-gray-800 rounded-lg py-3 flex items-center justify-center text-gray-800 dark:text-gray-200">
             <Pause className="w-5 h-5" />
           </button>
-          <button className="flex-1 bg-red-400 text-white rounded-lg py-3 flex items-center justify-center">
+          <button onClick={() => setSelectedView('home')} className="flex-1 bg-red-400 dark:bg-red-600 text-white rounded-lg py-3 flex items-center justify-center">
             <Square className="w-5 h-5" />
           </button>
         </div>
         
         <div className="mt-6">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
-              className="bg-blue-500 rounded-full h-2" 
-              style={{ width: `${sliderValue}%` }}
+              className="bg-blue-500 dark:bg-blue-400 rounded-full h-2" 
+              style={{ width: `${(sliderValue / 4) * 100}%` }}
             />
           </div>
-          <div className="text-right text-sm text-gray-500 mt-1">25 Min</div>
+          <div className="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">25 Min</div>
         </div>
       </div>
     </ResponsiveContainer>

@@ -64,3 +64,15 @@ input[type="range"]::-moz-range-thumb {
   -ms-user-select: none;
   user-select: none;
 }
+
+/* Dark mode slider customization */
+@media (prefers-color-scheme: dark) {
+  input[type="range"] {
+    background: #374151;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    background: #4B5563;
+    border-color: #374151;
+  }
+}
