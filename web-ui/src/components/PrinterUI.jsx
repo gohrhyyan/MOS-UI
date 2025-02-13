@@ -1,127 +1,176 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Upload, Settings, History, Printer, Pause, Square } from 'lucide-react';
-import MOSLogo from '../assets/MOS.png'; 
-import PrinterImage from '../assets/Printer.png'
+import MOSLogo from '../assets/MOS.png';
+import PrinterImage from '../assets/Printer.png';
 
 const PrinterUI = () => {
-  const [selectedView, setSelectedView] = useState('home'); // home, print, status
+  const [selectedView, setSelectedView] = useState('home');
   const [sliderValue, setSliderValue] = useState(50);
   const [printTime, setPrintTime] = useState('30 Min');
 
+  // Shared container component for consistent layout
+  const ResponsiveContainer = ({ children }) => (
+    <div className="w-full max-w-md mx-auto min-h-screen flex flex-col 
+      px-4 sm:px-6 
+      py-4 
+      bg-white 
+      relative">
+      {children}
+    </div>
+  );
+
   const HomeView = () => (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
-        {/* Logo */}
-        <div className="w-full flex justify-center mb-12">
+    <ResponsiveContainer>
+      {/* Main content container */}
+      <div className="flex-1 flex flex-col items-center justify-between">
+        {/* Top section */}
+        <div className="w-full flex justify-center mb-8 sm:mb-12">
           <img 
             src={MOSLogo}
             alt="MOS Printing Logo" 
-            className="h-16 w-auto"
+            className="h-12 sm:h-16 w-auto"
           />
         </div>
-        {/* Side Icons */}
-        <div className="absolute bottom-8 right-8 flex flex-col gap-4">
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <Settings className="w-6 h-6 text-gray-600" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <History className="w-6 h-6 text-gray-600" />
-          </button>
-        </div>
 
-        {/* Main Content */}
-        <div className="w-64 h-128 rounded-lg flex items-center justify-center mb-8">
+        {/* Middle section with printer image */}
+        <div className="w-48 sm:w-64 h-96 sm:h-128 rounded-lg flex items-center justify-center">
           <img 
             src={PrinterImage}
             alt="Printer Preview" 
             className="w-full h-full object-contain"
           />
         </div>
-        
-        <button onClick={() => setSelectedView('print')} className="flex flex-col items-center justify-center gap-2 bg-gray-200 rounded-lg px-6 py-3 mb-4 w-48 text-gray-800">
-          <Upload className="w-8 h-8" />
-          <span className="text-sm text-gray-600">upload design</span>
-        </button>
+
+        {/* Bottom section with upload button and side icons */}
+        <div className="w-full flex items-center justify-center relative mt-6">
+          <button 
+            onClick={() => setSelectedView('print')} 
+            className="flex flex-col items-center justify-center 
+              gap-2 bg-gray-200 rounded-lg 
+              px-4 sm:px-6 py-2 sm:py-3 
+              w-40 sm:w-48 
+              text-gray-800 
+              hover:bg-gray-300 
+              active:bg-gray-400 
+              transition-colors"
+          >
+            <Upload className="w-6 h-6 sm:w-8 sm:h-8" />
+            <span className="text-xs sm:text-sm text-gray-600">upload design</span>
+          </button>
+
+          {/* Side buttons aligned with upload button */}
+          <div className="absolute right-0 flex gap-2 sm:gap-4">
+            <button className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200">
+              <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+            </button>
+            <button className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200">
+              <History className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </ResponsiveContainer>
   );
 
   const PrintView = () => (
-    <div className="flex flex-col h-full p-4">
-      <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
-        <img 
-          src="/api/placeholder/256/256" 
-          alt="Print Preview" 
-          className="w-full h-full object-contain p-4"
-        />
-      </div>
-      
-      <div className="text-lg mb-2">
-        Benchy.gcode
-        <div className="text-sm text-gray-500">50ml</div>
-      </div>
-      
-      <div className="flex items-center justify-center mb-6">
-        <div className="text-2xl">{printTime}</div>
-      </div>
-      
-      <div className="space-y-4">
-        <div className="flex justify-between text-sm text-gray-500">
-          <span>speed</span>
-          <span>precision</span>
-        </div>
-        <input 
-          type="range" 
-          min="0" 
-          max="100" 
-          value={sliderValue}
-          onChange={(e) => setSliderValue(e.target.value)}
-          className="w-full"
-        />
-      </div>
-      
-      <button className="mt-auto w-full bg-gray-200 rounded-lg py-3 flex items-center justify-center gap-2">
-        <Printer className="w-5 h-5" />
-        Print
+    <ResponsiveContainer>
+      {/* Back button */}
+      <button 
+        onClick={() => setSelectedView('home')}
+        className="mb-4 p-2 hover:bg-gray-100 rounded-full"
+      >
+        <ArrowLeft className="w-6 h-6" />
       </button>
-    </div>
+
+      <div className="flex-1 flex flex-col">
+        <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
+          <img 
+            src="/api/placeholder/256/256" 
+            alt="Print Preview" 
+            className="w-full h-full object-contain p-4"
+          />
+        </div>
+        
+        <div className="text-lg mb-2">
+          Benchy.gcode
+          <div className="text-sm text-gray-500">50ml</div>
+        </div>
+        
+        <div className="flex items-center justify-center mb-6">
+          <div className="text-2xl">{printTime}</div>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex justify-between text-sm text-gray-500">
+            <span>speed</span>
+            <span>precision</span>
+          </div>
+          <input 
+            type="range" 
+            min="0" 
+            max="100" 
+            value={sliderValue}
+            onChange={(e) => setSliderValue(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        
+        <button 
+          onClick={() => setSelectedView('status')}
+          className="mt-auto w-full bg-gray-200 rounded-lg py-3 flex items-center justify-center gap-2"
+        >
+          <Printer className="w-5 h-5" />
+          Print
+        </button>
+      </div>
+    </ResponsiveContainer>
   );
 
   const StatusView = () => (
-    <div className="flex flex-col h-full p-4">
-      <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
-        <img 
-          src="/api/placeholder/256/256" 
-          alt="Print Status" 
-          className="w-full h-full object-contain p-4"
-        />
-      </div>
-      
-      <div className="text-lg">Benchy.gcode</div>
-      
-      <div className="flex gap-4 mt-4">
-        <button className="flex-1 bg-gray-200 rounded-lg py-3 flex items-center justify-center">
-          <Pause className="w-5 h-5" />
-        </button>
-        <button className="flex-1 bg-red-400 text-white rounded-lg py-3 flex items-center justify-center">
-          <Square className="w-5 h-5" />
-        </button>
-      </div>
-      
-      <div className="mt-6">
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-500 rounded-full h-2" 
-            style={{ width: `${sliderValue}%` }}
+    <ResponsiveContainer>
+      {/* Back button */}
+      <button 
+        onClick={() => setSelectedView('print')}
+        className="mb-4 p-2 hover:bg-gray-100 rounded-full"
+      >
+        <ArrowLeft className="w-6 h-6" />
+      </button>
+
+      <div className="flex-1 flex flex-col">
+        <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
+          <img 
+            src="/api/placeholder/256/256" 
+            alt="Print Status" 
+            className="w-full h-full object-contain p-4"
           />
         </div>
-        <div className="text-right text-sm text-gray-500 mt-1">25 Min</div>
+        
+        <div className="text-lg">Benchy.gcode</div>
+        
+        <div className="flex gap-4 mt-4">
+          <button className="flex-1 bg-gray-200 rounded-lg py-3 flex items-center justify-center">
+            <Pause className="w-5 h-5" />
+          </button>
+          <button className="flex-1 bg-red-400 text-white rounded-lg py-3 flex items-center justify-center">
+            <Square className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="mt-6">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-500 rounded-full h-2" 
+              style={{ width: `${sliderValue}%` }}
+            />
+          </div>
+          <div className="text-right text-sm text-gray-500 mt-1">25 Min</div>
+        </div>
       </div>
-    </div>
+    </ResponsiveContainer>
   );
 
   return (
-    <div className="max-w-md mx-auto h-screen flex flex-col bg-white">
+    <div className="h-screen flex flex-col bg-white overflow-x-hidden">
       {selectedView === 'home' && <HomeView />}
       {selectedView === 'print' && <PrintView />}
       {selectedView === 'status' && <StatusView />}
