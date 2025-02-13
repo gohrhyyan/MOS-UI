@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, Settings, History, Printer, Pause, Square, Clock } from 'lucide-react';
 import MOSLogo from '../assets/MOS.png';
 import PrinterImage from '../assets/Printer.png';
+import BenchyImage from '../assets/Benchy.png';
+import gif from '../assets/3dprinting.gif';
 
 const PrinterUI = () => {
   const [selectedView, setSelectedView] = useState('home');
@@ -111,14 +113,14 @@ const PrinterUI = () => {
     return (
       <ResponsiveContainer title="Print Settings">
         <div className="flex-1 flex flex-col">
-          <div className="w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg mb-6 flex items-center justify-center">
-            <img 
-              src="/api/placeholder/256/256" 
-              alt="Print Preview" 
-              className="w-full h-full object-contain p-4"
-            />
-          </div>
-          
+        <div className="w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg mb-6 flex items-center justify-center">
+          <img 
+            src={BenchyImage}
+            alt="Print Thumbnail" 
+            className="w-full h-full object-cover rounded-lg"
+          />
+        </div>
+                  
           <div className="text-lg mb-2 text-gray-800 dark:text-gray-200">
             Benchy.gcode
             <div className="text-sm text-gray-500 dark:text-gray-400">50ml</div>
@@ -169,9 +171,9 @@ const PrinterUI = () => {
       <div className="flex-1 flex flex-col">
         <div className="w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg mb-6 flex items-center justify-center">
           <img 
-            src="/api/placeholder/256/256" 
-            alt="Print Status" 
-            className="w-full h-full object-contain p-4"
+            src={gif}
+            alt="Print Livestream" 
+            className="w-full h-full object-cover rounded-lg"
           />
         </div>
         
