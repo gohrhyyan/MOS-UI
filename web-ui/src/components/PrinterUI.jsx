@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, Settings, History, Printer, Pause, Square } from 'lucide-react';
 import MOSLogo from '../assets/MOS.png';
 import PrinterImage from '../assets/Printer.png';
@@ -7,33 +7,51 @@ const PrinterUI = () => {
   const [selectedView, setSelectedView] = useState('home');
   const [sliderValue, setSliderValue] = useState(50);
   const [printTime, setPrintTime] = useState('30 Min');
+  
+  // Add useEffect to handle viewport height
+  useEffect(() => {
+    // Set initial height
+    const setHeight = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    // Set height on mount
+    setHeight();
+    
+    // Update height on resize
+    window.addEventListener('resize', setHeight);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', setHeight);
+  }, []);
 
-  // Shared container component for consistent layout
+  // Updated ResponsiveContainer with new height calculation
   const ResponsiveContainer = ({ children }) => (
-    <div className="w-full max-w-md mx-auto min-h-screen flex flex-col 
+    <div className="w-full max-w-md mx-auto flex flex-col 
       px-4 sm:px-6 
       py-4 
       bg-white 
-      relative">
+      relative
+      h-[calc(var(--vh,1vh)*100)]">
       {children}
     </div>
   );
 
   const HomeView = () => (
     <ResponsiveContainer>
-      {/* Main content container */}
       <div className="flex-1 flex flex-col items-center justify-between">
-        {/* Top section */}
-        <div className="w-full flex justify-center mb-8 sm:mb-12">
+        {/* Top section with more space */}
+        <div className="w-full flex justify-center mb-12">
           <img 
             src={MOSLogo}
             alt="MOS Printing Logo" 
-            className="h-12 sm:h-16 w-auto"
+            className="h-16 w-auto"
           />
         </div>
 
-        {/* Middle section with printer image */}
-        <div className="w-48 sm:w-64 h-96 sm:h-128 rounded-lg flex items-center justify-center">
+        {/* Middle section with larger printer image */}
+        <div className="w-64 flex-1 flex items-center justify-center mb-12">
           <img 
             src={PrinterImage}
             alt="Printer Preview" 
@@ -41,30 +59,30 @@ const PrinterUI = () => {
           />
         </div>
 
-        {/* Bottom section with upload button and side icons */}
-        <div className="w-full flex items-center justify-center relative mt-6">
+        {/* Bottom section with vertically stacked icons */}
+        <div className="w-full flex items-center justify-center relative">
           <button 
             onClick={() => setSelectedView('print')} 
             className="flex flex-col items-center justify-center 
               gap-2 bg-gray-200 rounded-lg 
-              px-4 sm:px-6 py-2 sm:py-3 
-              w-40 sm:w-48 
+              px-6 py-3
+              w-48
               text-gray-800 
               hover:bg-gray-300 
               active:bg-gray-400 
               transition-colors"
           >
-            <Upload className="w-6 h-6 sm:w-8 sm:h-8" />
-            <span className="text-xs sm:text-sm text-gray-600">upload design</span>
+            <Upload className="w-8 h-8" />
+            <span className="text-sm text-gray-600">upload design</span>
           </button>
 
-          {/* Side buttons aligned with upload button */}
-          <div className="absolute right-0 flex gap-2 sm:gap-4">
+          {/* Vertically stacked side buttons */}
+          <div className="absolute right-0 flex flex-col gap-4">
             <button className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200">
-              <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+              <Settings className="w-6 h-6 text-gray-600" />
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200">
-              <History className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+              <History className="w-6 h-6 text-gray-600" />
             </button>
           </div>
         </div>
