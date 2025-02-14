@@ -68,8 +68,6 @@ const PrinterUI = () => {
   const StopDialog = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-        <h3 className="text-lg font-medium mb-4">Stop Print?</h3>
-        <p className="text-gray-500 mb-6">This action cannot be undone.</p>
         <div className="flex gap-4">
           <button
             onClick={() => setShowStopDialog(false)}
@@ -194,7 +192,7 @@ const PrinterUI = () => {
       <ResponsiveContainer>
         <TopBar title="Preview" showBack={true} />
         <div className="flex-1 flex flex-col p-4">
-          <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6">
+          <div className="w-full aspect-square bg-gray-100 rounded-lg mb-2">
             <img 
               src={BenchyImage}
               alt="Print Thumbnail" 
@@ -202,21 +200,21 @@ const PrinterUI = () => {
             />
           </div>
           
-          <div className="text-lg mb-2 text-gray-800">
+          <div className="text-lg mb-1 text-gray-800">
             {printDetails.filename}
             <div className="text-sm text-gray-500">{printDetails.printVolume}</div>
           </div>
           
-          <div className="flex items-center justify-center mb-6 gap-2">
+          <div className="flex items-center justify-center mb-2 gap-2">
             <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             <div className="text-2xl text-gray-800 dark:text-gray-200">
               {formatTime(adjustedTime)}
             </div>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-4 mb-2">
             <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
-              <span>precision</span>
+              <span>quality</span>
               <span>speed</span>
             </div>
             <div className="flex justify-between px-1">
