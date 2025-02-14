@@ -8,12 +8,14 @@ import gif from '../assets/3dprinting.gif';
 const PrinterUI = () => {
   const [selectedView, setSelectedView] = useState('home');
   const [sliderValue, setSliderValue] = useState(2);
-  const [printStatus, setPrintStatus] = useState('printing');
-  const [showStopDialog, setShowStopDialog] = useState(false);
-  const [showSavedMessage, setShowSavedMessage] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [showToast, setShowToast] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const gifRef = useRef(null);
+  const [showStopDialog, setShowStopDialog] = useState(false);
+  const [printStatus, setPrintStatus] = useState('printing');
+  const [progress, setProgress] = useState(0);
+  const progressInterval = useRef(null);
+  const [startTime, setStartTime] = useState(null);
+  const [estimatedDuration] = useState(25000); // 25 seconds for demo
   
   // Print details (will come from API later)
   const [printDetails, setPrintDetails] = useState({
@@ -31,51 +33,89 @@ const PrinterUI = () => {
     return () => window.removeEventListener('resize', setHeight);
   }, []);
 
-  // Progress bar animation
   useEffect(() => {
-    let interval;
-    if (printStatus === 'printing' && !isPaused && progress < 100) {
-      interval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 0.1, 100));
-      }, 100);
+    if (selectedView === 'status' && !isPaused) {
+      setStartTime(Date.now());
     }
-    return () => clearInterval(interval);
-  }, [printStatus, isPaused, progress]);
+  }, [selectedView, isPaused]);
 
   const handleBack = () => {
-    setShowSavedMessage(true);
+    setShowToast(true);
     setSelectedView('home');
-    setTimeout(() => setShowSavedMessage(false), 3000);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
-  const handlePause = () => {
-    setIsPaused(!isPaused);
-    if (gifRef.current) {
-      if (isPaused) {
-        gifRef.current.play();
-      } else {
-        gifRef.current.pause();
-      }
-    }
+  const handlePauseResume = () => {
+    setIsPaused(prevPaused => {
+      // Use the new value of isPaused to set the correct status
+      setPrintStatus(!prevPaused ? 'pausing' : 'resuming');
+      setTimeout(() => {
+        setPrintStatus(!prevPaused ? 'paused' : 'printing');
+      }, 1000);
+      return !prevPaused;
+    });
   };
+  
 
-  const TopBar = ({ title, showBack = false }) => (
-    <div className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-200">
-      {showBack ? (
-        <button onClick={handleBack} className="p-1 hover:bg-gray-100 rounded-full">
-          <ArrowLeft className="w-6 h-6 text-gray-600" />
-        </button>
-      ) : (
-        <div className="w-6" /> // Spacer for alignment
-      )}
-      <span className="text-lg font-medium text-gray-800">{title}</span>
-      <div className="w-6" /> {/* Spacer for alignment */}
+  const Toast = () => (
+    <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 
+      bg-gray-800 text-white px-4 py-2 rounded-lg
+      transition-opacity duration-300 ${showToast ? 'opacity-100' : 'opacity-0'}`}>
+      {printDetails.filename}, saved to history
     </div>
   );
 
-  const ResponsiveContainer = ({ children, title, showBack }) => (
-    <div className="w-full max-w-md mx-auto flex flex-col px-4 sm:px-6 py-4 bg-white relative h-[calc(var(--vh,1vh)*100)]">
-      {title && <TopBar title={title} showBack={showBack} />}
+  const StopDialog = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+        <h3 className="text-lg font-medium mb-4">Stop Print?</h3>
+        <p className="text-gray-500 mb-6">This action cannot be undone.</p>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setShowStopDialog(false)}
+            className="flex-1 py-2 border border-gray-300 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              setShowStopDialog(false);
+              setShowToast(true);
+              setSelectedView('home');
+              setTimeout(() => setShowToast(false), 3000);
+            }}
+            className="flex-1 py-2 bg-red-500 text-white rounded-lg"
+          >
+            STOP PRINT
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const TopBar = ({ title, showBack = false }) => (
+    <div className="w-full flex items-center justify-between p-4 border-b">
+      {showBack ? (
+        <button onClick={handleBack} className="p-2">
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+      ) : (
+        <div className="w-9" /> // Spacer for alignment
+      )}
+      <span className="text-lg font-medium">{title}</span>
+      <div className="w-9" /> {/* Spacer for alignment */}
+    </div>
+  );
+
+
+  // Updated ResponsiveContainer with new height calculation
+  const ResponsiveContainer = ({ children }) => (
+    <div className="w-full max-w-md mx-auto flex flex-col 
+      px-4 sm:px-6 
+      py-4 
+      bg-white 
+      relative
+      h-[calc(var(--vh,1vh)*100)]">
       {children}
     </div>
   );
@@ -147,20 +187,21 @@ const PrinterUI = () => {
   };
 
   const PrintView = () => {
-    const basePrintTimeMs = 30 * 60 * 1000;
-    const adjustedTime = calculateAdjustedTime(basePrintTimeMs, sliderValue);
+    const baseTimeMs = 30 * 60 * 1000;
+    const adjustedTime = calculateAdjustedTime(baseTimeMs, sliderValue);
 
     return (
-      <ResponsiveContainer title="Preview" showBack={true}>
-        <div className="flex-1 flex flex-col pt-4">
-          <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
+      <ResponsiveContainer>
+        <TopBar title="Preview" showBack={true} />
+        <div className="flex-1 flex flex-col p-4">
+          <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6">
             <img 
               src={BenchyImage}
               alt="Print Thumbnail" 
               className="w-full h-full object-cover rounded-lg"
             />
           </div>
-                  
+          
           <div className="text-lg mb-2 text-gray-800">
             {printDetails.filename}
             <div className="text-sm text-gray-500">{printDetails.printVolume}</div>
@@ -206,15 +247,22 @@ const PrinterUI = () => {
     );
   };
 
-  const StatusView = () => (
-    <ResponsiveContainer title={printStatus}>
-      <div className="flex-1 flex flex-col pt-4">
-        <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
+const StatusView = () => {
+  // Calculate progress based on elapsed time
+  const currentProgress = startTime && !isPaused ? 
+    Math.min(((Date.now() - startTime) / estimatedDuration) * 100, 100) : 
+    progress;
+
+  return (
+    <ResponsiveContainer>
+      <TopBar title={printStatus.charAt(0).toUpperCase() + printStatus.slice(1)} />
+      <div className="flex-1 flex flex-col p-4">
+        <div className="w-full aspect-square bg-gray-100 rounded-lg mb-6">
           <img 
-            ref={gifRef}
             src={gif}
             alt="Print Livestream" 
             className="w-full h-full object-cover rounded-lg"
+            style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
           />
         </div>
         
@@ -222,13 +270,13 @@ const PrinterUI = () => {
         
         <div className="flex gap-4 mt-4">
           <button 
-            onClick={handlePause}
-            className="flex-1 bg-gray-200 rounded-lg py-3 flex items-center justify-center text-gray-800"
+            onClick={handlePauseResume}
+            className="flex-1 bg-gray-200 rounded-lg py-3 flex items-center justify-center"
           >
             {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
           </button>
           <button 
-            onClick={() => setShowStopDialog(true)} 
+            onClick={() => setShowStopDialog(true)}
             className="flex-1 bg-red-400 text-white rounded-lg py-3 flex items-center justify-center"
           >
             <Square className="w-5 h-5" />
@@ -238,55 +286,29 @@ const PrinterUI = () => {
         <div className="mt-6">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-500 rounded-full h-2 transition-all duration-300" 
-              style={{ width: `${progress}%` }}
+              className="bg-blue-500 rounded-full h-2"
+              style={{ 
+                width: `${currentProgress}%`,
+                transition: 'width 0.3s linear'
+              }}
             />
           </div>
-          <div className="text-right text-sm text-gray-500 mt-1">25 Min</div>
-        </div>
-      </div>
-
-      {/* Stop Print Dialog */}
-      {showStopDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Stop Print?</h3>
-            <p className="text-gray-500 mb-6">This action cannot be undone.</p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowStopDialog(false)}
-                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowStopDialog(false);
-                  setSelectedView('home');
-                }}
-                className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
-              >
-                STOP PRINT
-              </button>
-            </div>
+          <div className="text-right text-sm text-gray-500 mt-1">
+            {Math.ceil((100 - currentProgress) / 4)} Min
           </div>
         </div>
-      )}
-
-      {/* Saved Message Toast */}
-      {showSavedMessage && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm transition-opacity duration-300">
-          {printDetails.filename}, saved to history
-        </div>
-      )}
+      </div>
+      {showStopDialog && <StopDialog />}
     </ResponsiveContainer>
   );
+};
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-x-hidden">
       {selectedView === 'home' && <HomeView />}
       {selectedView === 'print' && <PrintView />}
       {selectedView === 'status' && <StatusView />}
+      <Toast />
     </div>
   );
 };
