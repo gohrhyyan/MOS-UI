@@ -1,14 +1,15 @@
 import React, { useState } from 'react'; 
 import HomeView from './views/HomeView';  
 import PreparePrintView from './views/PreparePrintView';
-//import PrintingView from './views/PrintingView';
-//import Toast from './common/Toast';  
+import BenchyImage from '../../assets/Benchy.png';
+import PrintingView from './views/PrintingView';
+import Toast from './common/Toast';  
 
 const PrinterUI = () => {
     // selectedView state controls which view is currently displayed
     // Initially set to 'home', it can be changed to 'print' or 'status'
     // setSelectedView is a function that lets you update the selectedView state
-    const [selectedView, setSelectedView] = useState('prepare');
+    const [selectedView, setSelectedView] = useState('home');
 
     // showToast state manages the visibility of toast notifications
     // Starts as false (hidden), can be toggled to show/hide notifications
@@ -19,6 +20,7 @@ const PrinterUI = () => {
     // Using useState even for static data allows for easy updates later
     const [printDetails] = useState({
         filename: 'benchy.gcode',  // Name of the file being printed
+        thumbnail: BenchyImage,
         printVolume: '50ml'        // Volume of the print
     });
 
@@ -63,13 +65,13 @@ const PrinterUI = () => {
                 />
             )}
             
-            {/* Toast notification component *}
-            {/* Shows a temporary notification with the filename when triggered *s}
+            {/* Toast notification component */}
+            {/* Shows a temporary notification with the filename when triggered */}
             <Toast 
                 show={showToast}  // Controls visibility based on showToast state
                 message={`${printDetails.filename}, saved to history`}  // Notification message
             />
-            */}
+
         </div>
         );
     };

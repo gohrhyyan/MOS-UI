@@ -1,6 +1,7 @@
+// src/hooks/usePrintProgress.js
 import { useState, useEffect, useRef } from 'react';
 
-export const usePrintProgress = (isPaused, setPrintStatus) => {
+export const usePrintProgress = ({ isPaused, setIsPaused, setPrintStatus }) => {
   const [progress, setProgress] = useState(0);
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
