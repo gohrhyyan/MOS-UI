@@ -15,29 +15,47 @@ const PrinterUI = () => {
   const [progress, setProgress] = useState(0);
   const progressInterval = useRef(null);
   const [startTime, setStartTime] = useState(null);
-  const [estimatedDuration] = useState(25000); // 25 seconds for demo
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const estimatedDuration = 25000; // 25 seconds for demo
   
-  // Print details (will come from API later)
-  const [printDetails, setPrintDetails] = useState({
+  const [printDetails] = useState({
     filename: 'benchy.gcode',
     printVolume: '50ml'
   });
 
-  useEffect(() => {
-    const setHeight = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-    };
-    setHeight();
-    window.addEventListener('resize', setHeight);
-    return () => window.removeEventListener('resize', setHeight);
-  }, []);
-
+  // Handle progress updates
   useEffect(() => {
     if (selectedView === 'status' && !isPaused) {
-      setStartTime(Date.now());
+      // Clear any existing interval
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+
+      // Set initial time if not set
+      if (!startTime) {
+        setStartTime(Date.now() - elapsedTime);
+      }
+
+      // Create new interval
+      progressInterval.current = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        setElapsedTime(elapsed);
+        const currentProgress = Math.min((elapsed / estimatedDuration) * 100, 100);
+        setProgress(currentProgress);
+
+        // Clear interval when print is complete
+        if (currentProgress >= 100) {
+          clearInterval(progressInterval.current);
+        }
+      }, 100); // Update every 100ms for smooth animation
     }
-  }, [selectedView, isPaused]);
+
+    return () => {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+    };
+  }, [selectedView, isPaused, startTime, estimatedDuration, elapsedTime]);
 
   const handleBack = () => {
     setShowToast(true);
@@ -47,15 +65,22 @@ const PrinterUI = () => {
 
   const handlePauseResume = () => {
     setIsPaused(prevPaused => {
-      // Use the new value of isPaused to set the correct status
+      if (!prevPaused) { // If we're pausing
+        // Store the current elapsed time
+        setElapsedTime(Date.now() - startTime);
+      } else { // If we're resuming
+        // Update the start time based on stored elapsed time
+        setStartTime(Date.now() - elapsedTime);
+      }
+      
       setPrintStatus(!prevPaused ? 'pausing' : 'resuming');
       setTimeout(() => {
         setPrintStatus(!prevPaused ? 'paused' : 'printing');
       }, 1000);
+      
       return !prevPaused;
     });
   };
-  
 
   const Toast = () => (
     <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 
