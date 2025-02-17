@@ -1,34 +1,33 @@
 import React, { useState } from 'react'; 
 import HomeView from './views/HomeView';  
 import PreparePrintView from './views/PreparePrintView';
+//import PrintingView from './views/PrintingView';
+import Toast from './common/Toast'; 
+import useMoonrakerSocket from '../hooks/useMoonrakerSocket'; 
+
+// TEMP
 import BenchyImage from '../../assets/Benchy.png';
-import PrintingView from './views/PrintingView';
-import Toast from './common/Toast';  
 
 const PrinterUI = () => {
-    // selectedView state controls which view is currently displayed
-    // Initially set to 'home', it can be changed to 'print' or 'status'
-    // setSelectedView is a function that lets you update the selectedView state
+    // STATE MANAGEMENT
+
+    // Controls which view is currently displayed
     const [selectedView, setSelectedView] = useState('home');
 
-    // showToast state manages the visibility of toast notifications
-    // Starts as false (hidden), can be toggled to show/hide notifications
-    const [showToast, setShowToast] = useState(false);
+    // Toast state, null when hidden, string message when shown.
+    const [toastMessage, setToastMessage] = useState(null);
 
-    // printDetails state stores information about the current print
-    // This is a static object in this example, but could be dynamic in a real app
-    // Using useState even for static data allows for easy updates later
-    const [printDetails] = useState({
-        filename: 'benchy.gcode',  // Name of the file being printed
-        thumbnail: BenchyImage,
-        printVolume: '50ml'        // Volume of the print
-    });
+    // Stores information about the current print
+    const [printDetails, setPrintDetails] = useState(null);
+
+    // Initialize WebSocket connection
+    const { printerState, sendMessage } = useMoonrakerSocket();
 
     // Function to show the toast notification
     // Sets showToast to true, then uses a timeout to hide it after 3 seconds
-    const handleToast = () => {
-        setShowToast(true);  // Make the toast visible
-        setTimeout(() => setShowToast(false), 3000);  // Hide toast after 3 seconds
+    const showToast = (message) => {
+        setToastMessage(message);
+        setTimeout(() => setToastMessage(null), 3000);
     };
 
 
@@ -43,7 +42,10 @@ const PrinterUI = () => {
             {/* Home view - shown when selectedView is 'home' */}
             {selectedView === 'home' && (
                 <HomeView     
-                    setSelectedView={setSelectedView} 
+                    setSelectedView = {setSelectedView}
+                    showToast = {showToast}
+                    setPrintDetails = {setPrintDetails}
+                    printerState={printerState}
                 />
             )}
             
@@ -52,7 +54,7 @@ const PrinterUI = () => {
                 <PreparePrintView 
                     setSelectedView={setSelectedView}
                     printDetails={printDetails}
-                    handleToast={handleToast}
+                    showToast={showToast}
                 />
             )}
             
@@ -65,12 +67,8 @@ const PrinterUI = () => {
                 />
             )}
             
-            {/* Toast notification component */}
             {/* Shows a temporary notification with the filename when triggered */}
-            <Toast 
-                show={showToast}  // Controls visibility based on showToast state
-                message={`${printDetails.filename}, saved to history`}  // Notification message
-            />
+            <Toast message={toastMessage} />
 
         </div>
         );

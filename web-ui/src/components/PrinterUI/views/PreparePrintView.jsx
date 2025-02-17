@@ -6,7 +6,7 @@ import TopBar from '../common/TopBar';
 import { calculateAdjustedTime } from '../../utils/timeUtils';
 const baseTimeMs = 30 * 60 * 1000;
 
-const PreparePrintView = ({ setSelectedView, printDetails, handleToast }) => {
+const PreparePrintView = ({ setSelectedView, printDetails, showToast }) => {
   const [sliderValue, setSliderValue] = useState(2);
   const adjustedTime = calculateAdjustedTime(baseTimeMs, sliderValue);
 
