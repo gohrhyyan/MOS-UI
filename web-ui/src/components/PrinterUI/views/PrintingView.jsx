@@ -1,4 +1,5 @@
 // src/components/PrinterUI/PrintingView/index.jsx
+import { fileUtils } from '../../utils/fileUtils';
 import React, { useState } from 'react';
 import { Play, Pause, Square } from 'lucide-react';
 import gif from '../../../assets/3dprinting.gif';
@@ -52,10 +53,11 @@ const ProgressBar = ({ progress }) => (
   </div>
 );
 
-const PrintingView = ({ setSelectedView, printDetails, handleToast }) => {
+const PrintingView = ({ setSelectedView, printDetails}) => {
   const [isPaused, setIsPaused] = useState(false);
   const [showStopDialog, setShowStopDialog] = useState(false);
   const [printStatus, setPrintStatus] = useState('printing');
+  const filename = fileUtils.getFilename(printDetails.path);
   
   const { 
     progress, 
@@ -72,10 +74,10 @@ const PrintingView = ({ setSelectedView, printDetails, handleToast }) => {
       <TopBar title={printStatus.charAt(0).toUpperCase() + printStatus.slice(1)} />
       <div className="flex-1 flex flex-col p-4">
         <PrintPreview 
-          gif={gif} 
-          isPaused={isPaused} 
-          filename={printDetails.filename}
-        />
+            gif={gif} 
+            isPaused={isPaused} 
+            filename={filename}
+        />v
         
         <ControlButtons 
           isPaused={isPaused}

@@ -1,5 +1,67 @@
 1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail. Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
 
+use this for moonraker configuration:
+[server]
+host: 0.0.0.0
+port: 7125
+# The maximum size allowed for a file upload (in MiB).  Default 1024 MiB
+max_upload_size: 1024
+# Path to klippy Unix Domain Socket
+klippy_uds_address: /tmp/klippy_uds
+
+[file_manager]
+# post processing for object cancel. Not recommended for low resource SBCs such as a Pi Zero. Default False
+enable_object_processing: False
+queue_gcode_uploads: True
+start_print_on_upload: False
+
+[authorization]
+cors_domains:
+    *://my.mainsail.xyz
+    *://*.local
+    *://*.lan
+    *.local
+    *://localhost
+    *://localhost:*
+    *://127.0.0.1
+    *://127.0.0.1:*
+    
+trusted_clients:
+    10.0.0.0/8
+    127.0.0.1
+    127.0.0.0/8
+    169.254.0.0/16
+    172.16.0.0/12
+    192.168.0.0/16
+    FE80::/10
+    ::1/128
+
+# enables partial support of Octoprint API
+[octoprint_compat]
+
+# enables moonraker to track and store print history.
+[history]
+
+# this enables moonraker announcements for mainsail
+[announcements]
+subscriptions:
+    mainsail
+
+# this enables moonraker's update manager
+[update_manager]
+refresh_interval: 168
+enable_auto_refresh: True
+
+[update_manager mainsail]
+type: web
+channel: stable
+repo: mainsail-crew/mainsail
+path: ~/mainsail
+
+[machine]
+provider: none
+validate_service: False
+
 2) CD into /home/gohrhyyan/repos Clone https://github.com/gohrhyyan/ic-designstudy-groupproj
 
 3) sudo apt update, sudo apt install nginx

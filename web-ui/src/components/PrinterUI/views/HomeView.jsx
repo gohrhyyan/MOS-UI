@@ -1,101 +1,94 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Upload, Settings, History } from 'lucide-react';
 import MOSLogo from '../../../assets/MOS.png';
 import PrinterImage from '../../../assets/Printer.png';
 import ResponsiveContainer from '../common/ResponsiveContainer';
+import useFileUpload from '../../hooks/useFileUpload';
 
-// Define the HomeView component as a functional component
-// Functional components are the modern way to write React components using functions
-// The ({ setSelectedView }) is using "destructuring" to pull out the setSelectedView prop
-// Props are how parent components pass data and functions to child components
-const HomeView = ({ setSelectedView, showToast, setPrintDetails, printerState }) => {
+const HomeView = ({ 
+  setSelectedView, 
+  showToast, 
+  setPrintDetails, 
+  currentFiles, 
+  setCurrentFiles, 
+  sendMessage, 
+  socket, 
+  printerState
+}) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Fetch files on component mount
+  useEffect(() => {
+    const fetchFiles = async () => {
+      if (socket != null) {
+        try {
+          const response = await sendMessage("server.files.list", {
+            "root": "gcodes"
+          });
+          setCurrentFiles(response.result);
+          console.log('Received files:', currentFiles);
+        } catch (error) {
+          console.error('Error fetching files:', error);
+          showToast('Failed to fetch files');
+        }
+      }
+    };
+    fetchFiles();
+  }, [socket, sendMessage, setCurrentFiles, showToast]);
+
   // Handle successful file upload
   const handleFileUploadSuccess = useCallback((fileDetails) => {
     setPrintDetails(fileDetails);
     setSelectedView('prepare');
   }, [setPrintDetails, setSelectedView]);
-  
-  const fileInputRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
 
-    // Handle file upload
-    const uploadFile = async (file) => {
-      // Validate file extension
-      if (!file.name.toLowerCase().endsWith('.gcode')) {
-          showToast('Only .gcode files are allowed');
-          return;
-      }
-
-      setIsUploading(true);
-
-      try {
-          const formData = new FormData();
-          formData.append('file', file);
-          
-          const response = await fetch('/server/files/upload', {
-              method: 'POST',
-              body: formData
-          });
-
-          if (!response.ok) {
-              throw new Error(`Upload failed: ${response.statusText}`);
-          }
-
-          const result = await response.json();
-
-          handleFileUploadSuccess({
-              filename: result.item.path,
-              size: result.item.size
-          });
-
-      } catch (error) {
-          showToast(`${error.message}`);
-      } finally {
-          setIsUploading(false);
-      }
-  };
+  // Initialize file upload handler
+  const { uploadFile, isUploading } = useFileUpload({
+    currentFiles,
+    showToast,
+    handleFileUploadSuccess
+  });
 
   // Drag and drop handlers
   const handleDrag = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   const handleDragIn = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(true);
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
   };
 
   const handleDragOut = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
   };
 
   const handleDrop = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-
-      const file = e.dataTransfer.files[0];
-      if (file) {
-          uploadFile(file);
-      }
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      uploadFile(file);
+    }
   };
 
   // File input handler
   const handleFileInput = (e) => {
-      const file = e.target.files?.[0];
-      if (file) {
-          uploadFile(file);
-      }
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadFile(file);
+    }
   };
 
-  return(
+  return (
     <ResponsiveContainer>
-      {/* Main container using flexbox for vertical layout */}
       <div 
         className="flex-1 flex flex-col items-center justify-between"
         onDragEnter={handleDragIn}
@@ -103,7 +96,6 @@ const HomeView = ({ setSelectedView, showToast, setPrintDetails, printerState })
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        {/* Logo section - centered at the top */}
         <div className="w-full flex justify-center mb-12">
           <img 
             src={MOSLogo}
@@ -112,7 +104,6 @@ const HomeView = ({ setSelectedView, showToast, setPrintDetails, printerState })
           />
         </div>
 
-        {/* Printer image section - takes up flexible space in the middle */}
         <div className="w-64 flex-1 flex items-center justify-center mb-12">
           <img 
             src={PrinterImage}
@@ -121,28 +112,25 @@ const HomeView = ({ setSelectedView, showToast, setPrintDetails, printerState })
           />
         </div>
 
-        {/* Action buttons section at the bottom */}
         <div className="w-full flex items-center justify-center relative">
-          
-          {/* Main upload button */}
           <button 
             onClick={() => fileInputRef.current?.click()}
             className={`
-                flex flex-col items-center justify-center gap-2 
-                bg-gray-200 rounded-lg px-6 py-3 w-48 
-                text-gray-800 hover:bg-gray-300 active:bg-gray-400 
-                transition-colors
-                ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
+              flex flex-col items-center justify-center gap-2 
+              bg-gray-200 rounded-lg px-6 py-3 w-48 
+              text-gray-800 hover:bg-gray-300 active:bg-gray-400 
+              transition-colors
+              ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
+              ${isDragging ? 'bg-gray-300' : ''}
             `}
             disabled={isUploading}
-        >
+          >
             <Upload className={`w-8 h-8 ${isUploading ? 'animate-pulse' : ''}`} />
             <span className="text-sm text-gray-600">
-                {isUploading ? 'uploading...' : 'upload design'}
+              {isUploading ? 'uploading...' : 'upload design'}
             </span>
-        </button>
+          </button>
 
-          {/* Hidden file input */}
           <input 
             type="file" 
             ref={fileInputRef}
@@ -151,15 +139,14 @@ const HomeView = ({ setSelectedView, showToast, setPrintDetails, printerState })
             accept=".gcode"
           />
 
-
-          {/* Sidebar buttons */}
           <div className="absolute right-0 flex flex-col gap-4">
-            {/* Settings button */}
             <button className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200">
               <Settings className="w-6 h-6 text-gray-600" />
             </button>
-            {/* History button */}
-            <button className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200">
+            <button 
+              onClick={() => setSelectedView('history')}
+              className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200"
+            >
               <History className="w-6 h-6 text-gray-600" />
             </button>
           </div>

@@ -16,7 +16,8 @@ web-ui - the custom MOS UI hosted on NGINX
     │           └── StopDialog.jsx
     ├── hooks/
     │   ├── useMoonrakerSocket.js
-    │   └── usePrintProgress.js     # Custom hook for print 
+    │   ├── useFileUpload.js
+    │   └── usePrintProgress.js
     progress
     └── utils/
-        └── timeUtils.js           # Utility functions for time calculations
+        └── timeUtils.js

@@ -1,7 +1,8 @@
 import React, { useState } from 'react'; 
 import HomeView from './views/HomeView';  
 import PreparePrintView from './views/PreparePrintView';
-//import PrintingView from './views/PrintingView';
+import PrintingView from './views/PrintingView';
+import HistoryView from './views/HistoryView';
 import Toast from './common/Toast'; 
 import useMoonrakerSocket from '../hooks/useMoonrakerSocket'; 
 
@@ -21,7 +22,9 @@ const PrinterUI = () => {
     const [printDetails, setPrintDetails] = useState(null);
 
     // Initialize WebSocket connection
-    const { printerState, sendMessage } = useMoonrakerSocket();
+    const { printerState, sendMessage, socket } = useMoonrakerSocket();
+
+    const [currentFiles, setCurrentFiles] = useState([]);
 
     // Function to show the toast notification
     // Sets showToast to true, then uses a timeout to hide it after 3 seconds
@@ -45,6 +48,10 @@ const PrinterUI = () => {
                     setSelectedView = {setSelectedView}
                     showToast = {showToast}
                     setPrintDetails = {setPrintDetails}
+                    currentFiles = {currentFiles}
+                    setCurrentFiles = {setCurrentFiles}
+                    sendMessage = {sendMessage}
+                    socket = {socket}
                     printerState={printerState}
                 />
             )}
@@ -54,7 +61,6 @@ const PrinterUI = () => {
                 <PreparePrintView 
                     setSelectedView={setSelectedView}
                     printDetails={printDetails}
-                    showToast={showToast}
                 />
             )}
             
@@ -63,7 +69,14 @@ const PrinterUI = () => {
                 <PrintingView
                     setSelectedView={setSelectedView}
                     printDetails={printDetails}
-                    handleToast={handleToast}
+                />
+            )}
+
+            {selectedView === 'history' && (
+                <HistoryView
+                    setSelectedView={setSelectedView}
+                    currentFiles={currentFiles}
+                    setPrintDetails={setPrintDetails}
                 />
             )}
             
