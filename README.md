@@ -1,3 +1,4 @@
+![image](https://github.com/user-attachments/assets/b172adfb-9a0b-4fe7-a8f0-8c4e5a934b20)
 # ic-designstudy-groupproj
 web-ui - the custom MOS UI hosted on NGINX
     src/
