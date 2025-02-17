@@ -90,13 +90,13 @@ const HomeView = ({
   return (
     <ResponsiveContainer>
       <div 
-        className="flex-1 flex flex-col items-center justify-between"
+        className="flex flex-col items-center justify-between"
         onDragEnter={handleDragIn}
         onDragLeave={handleDragOut}
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <div className="w-full flex justify-center mb-12">
+        <div className="w-full flex justify-center mb-4">
           <img 
             src={MOSLogo}
             alt="MOS Printing Logo" 
@@ -104,7 +104,7 @@ const HomeView = ({
           />
         </div>
 
-        <div className="w-64 flex-1 flex items-center justify-center mb-12">
+        <div className="w-64 flex items-center justify-center mb-4">
           <img 
             src={PrinterImage}
             alt="Printer Preview" 
