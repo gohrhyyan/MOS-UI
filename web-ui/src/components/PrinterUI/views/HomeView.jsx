@@ -26,8 +26,8 @@ const HomeView = ({
           const response = await sendMessage("server.files.list", {
             "root": "gcodes"
           });
-          setCurrentFiles(response.result);
-          console.log('Received files:', currentFiles);
+          setCurrentFiles(response);
+          console.log('Set Files:', currentFiles);
         } catch (error) {
           console.error('Error fetching files:', error);
           showToast('Failed to fetch files');
@@ -35,7 +35,7 @@ const HomeView = ({
       }
     };
     fetchFiles();
-  }, [socket, sendMessage, setCurrentFiles, showToast]);
+  }, [socket]);
 
   // Handle successful file upload
   const handleFileUploadSuccess = useCallback((fileDetails) => {

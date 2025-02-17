@@ -77,7 +77,7 @@ const PrintingView = ({ setSelectedView, printDetails}) => {
             gif={gif} 
             isPaused={isPaused} 
             filename={filename}
-        />v
+        />
         
         <ControlButtons 
           isPaused={isPaused}

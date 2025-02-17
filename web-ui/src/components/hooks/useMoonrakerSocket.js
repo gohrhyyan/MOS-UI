@@ -18,7 +18,7 @@ const useMoonrakerSocket = () => {
       reject(error || new Error('Connection closed'));
     });
     pendingMessagesRef.current.clear();
-  };filename
+  };
 
   const connect = useCallback(() => {
     try {

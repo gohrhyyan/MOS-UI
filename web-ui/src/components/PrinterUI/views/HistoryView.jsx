@@ -5,6 +5,9 @@ import TopBar from '../common/TopBar';
 import { fileUtils } from '../../utils/fileUtils';
 
 const FileHistoryView = ({ setSelectedView, currentFiles, setPrintDetails }) => {
+  // Sort files by modified timestamp in descending order (newest first)
+  const sortedFiles = [...currentFiles].sort((a, b) => b.modified - a.modified);
+
   // Function to handle when a file is selected
   const handleFileSelect = (file) => {
     setPrintDetails(file);
@@ -47,10 +50,10 @@ const FileHistoryView = ({ setSelectedView, currentFiles, setPrintDetails }) => 
     </div>
   );
 
-  // Function to render file list
+  // Function to render file list using sorted files
   const FileList = () => (
     <div className="flex-1 overflow-y-auto">
-      {currentFiles.map((file, index) => (
+      {sortedFiles.map((file, index) => (
         <FileItem key={`${file.path}-${index}`} file={file} />
       ))}
     </div>
@@ -59,13 +62,13 @@ const FileHistoryView = ({ setSelectedView, currentFiles, setPrintDetails }) => 
   return (
     <ResponsiveContainer>
       <TopBar 
-        title="Print History" 
+        title="File History" 
         showBack={true} 
         onBack={() => setSelectedView('home')}
       />
       
       <div className="flex-1 flex flex-col p-4">
-        {currentFiles && currentFiles.length > 0 ? (
+        {sortedFiles && sortedFiles.length > 0 ? (
           <FileList />
         ) : (
           <EmptyState />
