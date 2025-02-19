@@ -109,18 +109,17 @@ nano ~/printer_data/config/moonraker.conf
 use this for moonraker configuration:
 ```
 [server]
-host: 127.0.0.1
+host: 0.0.0.0
 port: 7125
 # The maximum size allowed for a file upload (in MiB).  Default 1024 MiB
 max_upload_size: 1024
 # Path to klippy Unix Domain Socket
-klippy_uds_address: /tmp/klippy_uds
+klippy_uds_address: ~/printer_data/comms/klippy.sock
 
 [file_manager]
 # post processing for object cancel. Not recommended for low resource SBCs such as a Pi Zero. Default False
 enable_object_processing: False
 queue_gcode_uploads: True
-start_print_on_upload: False
 
 [authorization]
 cors_domains:
@@ -148,17 +147,7 @@ subscriptions:
 refresh_interval: 168
 enable_auto_refresh: True
 
-[update_manager mainsail]
-type: web
-channel: stable
-repo: mainsail-crew/mainsail
-path: ~/mainsail
-
-[machine]
-provider: none
-validate_service: False
 ```
-
 Create the Moonraker startup service
 ```
 sudo nano /etc/systemd/system/moonraker.service
@@ -216,7 +205,9 @@ git clone https://github.com/gohrhyyan/ic-designstudy-groupproj
 
 3) PULL Mainsail
 ```
-cd ~/mainsail
+cd
+mkdir mainsail
+cd mainsail
 wget -q -O mainsail.zip https://github.com/mainsail-crew/mainsail/releases/latest/download/mainsail.zip && unzip mainsail.zip && rm mainsail.zip
 ```
 
@@ -229,6 +220,68 @@ sudo apt install nginx
 
 6) Insert an NGINX configuration file for web UI:
 ENTER THESE COMMMANDS
+
+
+```
+sudo touch /etc/nginx/conf.d/upstreams.conf
+```
+
+```
+sudo nano /etc/nginx/conf.d/upstreams.conf
+```
+
+```
+# /etc/nginx/conf.d/upstreams.conf
+
+upstream apiserver {
+    ip_hash;
+    server 127.0.0.1:7125;
+}
+
+upstream mjpgstreamer1 {
+    ip_hash;
+    server 127.0.0.1:8080;
+}
+
+upstream mjpgstreamer2 {
+    ip_hash;
+    server 127.0.0.1:8081;
+}
+
+upstream mjpgstreamer3 {
+    ip_hash;
+    server 127.0.0.1:8082;
+}
+
+upstream mjpgstreamer4 {
+    ip_hash;
+    server 127.0.0.1:8083;
+}
+```
+
+```
+sudo touch /etc/nginx/conf.d/common_vars.conf
+```
+
+
+```
+sudo nano /etc/nginx/conf.d/common_vars.conf
+```
+PASTE:
+
+```
+# /etc/nginx/conf.d/common_vars.conf
+
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+}
+```
+
+```
+sudo touch /etc/nginx/sites-available/printer
+```
+
 ```
 sudo nano /etc/nginx/sites-available/printer                           
 ```
@@ -240,25 +293,10 @@ server {
     server_name _;   # Catch-all
     client_max_body_size 100M;
 
-    # Disable proxy request buffering
-    proxy_request_buffering off;
-
-    # Serve the main UI requests
     location / {
         root /home/pi/ic-designstudy-groupproj/web-ui/dist;
         try_files $uri $uri/ /index.html;
-    }
-
-    # Mainsail UI at /pro path
-    location /pro {
-        root /home/pi/mainsail;
-        index index.html;
-        try_files $uri $uri/ /pro/index.html;
-        
-        # Handle caching for index.html
-        location = /pro/index.html {
-            add_header Cache-Control "no-store, no-cache, must-revalidate";
-        }
+        allow all;
     }
 
     # Proxy for Moonraker API calls
@@ -314,6 +352,82 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
+
+server {
+    listen 8443 default_server;
+    listen [::]:8443 default_server;
+    server_name _;   # Catch-all
+    client_max_body_size 100M;
+
+    # Mainsail UI path
+    location / {
+        root /home/pi/mainsail;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+        }
+
+    # Proxy for Moonraker API calls
+    location /server {
+        proxy_pass http://127.0.0.1:7125/server;
+        proxy_set_header Host $http_host;  # Keep the original Host header
+        proxy_set_header X-Real-IP 127.0.0.1;  # Mask the client IP
+        proxy_set_header X-Forwarded-For 127.0.0.1;  # Mask the X-Forwarded-For header
+        proxy_set_header X-Forwarded-Proto $scheme;  # Keep the original protocol (HTTP or HTTPS)
+    }
+
+    location /printer {
+        proxy_pass http://127.0.0.1:7125/printer;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP 127.0.0.1;
+        proxy_set_header X-Forwarded-For 127.0.0.1;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /api {
+        proxy_pass http://127.0.0.1:7125/api;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP 127.0.0.1;
+        proxy_set_header X-Forwarded-For 127.0.0.1;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /debug {
+        proxy_pass http://127.0.0.1:7125/debug;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP 127.0.0.1;
+        proxy_set_header X-Forwarded-For 127.0.0.1;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /websocket {
+        proxy_pass http://127.0.0.1:7125/websocket;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP 127.0.0.1;
+        proxy_set_header X-Forwarded-For 127.0.0.1;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+    }
+
+    location /machine {
+        proxy_pass http://127.0.0.1:7125/machine;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP 127.0.0.1;
+        proxy_set_header X-Forwarded-For 127.0.0.1;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+
+```
+sudo rm /etc/nginx/sites-enabled/default                           
+```
+
+```
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 ```
 
 
