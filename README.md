@@ -426,10 +426,6 @@ server {
 sudo rm /etc/nginx/sites-enabled/default                           
 ```
 
-```
-sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
-```
-
 
 7) give NGINX perms
 ```
@@ -454,7 +450,6 @@ sudo find /home/pi/mainsail -type f -exec chmod 644 {} \;
 8) Enable the site
 ```
 sudo ln -s /etc/nginx/sites-available/printer /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default # Remove default site
 sudo nginx -t # Test configuration
 sudo systemctl restart nginx
 ```
