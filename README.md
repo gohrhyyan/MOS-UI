@@ -3,9 +3,109 @@
 # ic-designstudy-groupproj
 
 DEPLOYMENT STEPS
+Install Raspberry PI OS 64bit lite, ensure that username is "pi"
 
 1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail. Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
 
+install dependancies
+```
+sudo apt install python3-virtualenv python3-dev python3-dev libffi-dev build-essential libncurses-dev avrdude gcc-avr binutils-avr avr-libc stm32flash dfu-util libnewlib-arm-none-eabi gcc-arm-none-eabi binutils-arm-none-eabi libusb-1.0-0 libusb-1.0-0-dev
+```
+
+clone klipper
+```
+cd ~
+git clone https://github.com/KevinOConnor/klipper
+```
+
+initialize the python venv and install python dependancies
+```
+cd ~
+virtualenv -p python3 ./klippy-env
+./klippy-env/bin/pip install -r ./klipper/scripts/klippy-requirements.txt
+```
+
+exit the python venv
+```
+deactivate
+```
+
+configure the startup services
+```
+mkdir ~/printer_data/
+mkdir ~/printer_data/config
+mkdir ~/printer_data/logs
+mkdir ~/printer_data/gcodes
+mkdir ~/printer_data/systemd
+mkdir ~/printer_data/comms
+touch ~/printer_data/config/printer.cfg
+```
+
+create a service for klipper
+```
+sudo nano /etc/systemd/system/klipper.service
+```
+
+Fill in this config 
+```
+[Unit]
+Description=Klipper 3D Printer Firmware SV1
+Documentation=https://www.klipper3d.org/
+After=network-online.target
+Wants=udev.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+User=pi
+RemainAfterExit=yes
+WorkingDirectory=/home/pi/klipper
+EnvironmentFile=/home/pi/printer_data/systemd/klipper.env
+ExecStart=/home/pi/klippy-env/bin/python $KLIPPER_ARGS
+Restart=always
+RestartSec=10
+```
+Save the file with CTRL+O and close the editor with CTRL+X.
+
+create an Klipper environment file in printer_data:
+```
+nano ~/printer_data/systemd/klipper.env
+```
+fill in these lines
+```
+KLIPPER_ARGS="/home/pi/klipper/klippy/klippy.py /home/pi/printer_data/config/printer.cfg -l /home/pi/printer_data/logs/klippy.log -I /home/pi/printer_data/comms/klippy.serial -a /home/pi/printer_data/comms/klippy.sock"
+```
+Save the file with CTRL+O and close the editor with CTRL+X.
+
+start klipper 
+```
+sudo systemctl enable klipper.service
+```
+
+install Moonraker dependencies
+```
+sudo apt install python3-virtualenv python3-dev libopenjp2-7 python3-libgpiod curl libcurl4-openssl-dev libssl-dev liblmdb-dev libsodium-dev zlib1g-dev libjpeg-dev packagekit wireless-tools
+```
+
+clone Moonraker
+```
+cd ~
+git clone https://github.com/Arksine/moonraker.git
+```
+
+initialize the python virtual environment and install the python dependencies:
+```
+cd ~
+virtualenv -p python3 ./moonraker-env
+./moonraker-env/bin/pip install -r ./moonraker/scripts/moonraker-requirements.txt
+```
+
+configure moonraker
+```
+nano ~/printer_data/config/moonraker.conf
+```
 use this for moonraker configuration:
 ```
 [server]
@@ -59,21 +159,75 @@ provider: none
 validate_service: False
 ```
 
+Create the Moonraker startup service
+```
+sudo nano /etc/systemd/system/moonraker.service
+```
+Fill in:
+```
+#Systemd moonraker Service
+
+[Unit]
+Description=API Server for Klipper SV1
+Requires=network-online.target
+After=network-online.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+User=pi
+SupplementaryGroups=moonraker-admin
+RemainAfterExit=yes
+WorkingDirectory=/home/pi/moonraker
+EnvironmentFile=/home/pi/printer_data/systemd/moonraker.env
+ExecStart=/home/pi/moonraker-env/bin/python $MOONRAKER_ARGS
+Restart=always
+RestartSec=10
+```
+Save the file with CTRL+O and close the editor with CTRL+X.
+
+Create a Moonraker Env File:
+```
+nano ~/printer_data/systemd/moonraker.env
+```
+Fill in 
+```
+MOONRAKER_ARGS="/home/pi/moonraker/moonraker/moonraker.py -d /home/pi/printer_data"
+```
+
+Enable Moonraker Service:
+```
+sudo systemctl enable moonraker.service
+```
+
+Add Moonraker Policy Rules:
+```
+./moonraker/scripts/set-policykit-rules.sh
+```
+
+
 2) PULL OUR REPO
 ```
-mkdir repos
-cd repos
+cd ~
 git clone https://github.com/gohrhyyan/ic-designstudy-groupproj
 ```
 
-4) INSTALL NGINX
+3) PULL Mainsail
 ```
-cd
+cd ~/mainsail
+wget -q -O mainsail.zip https://github.com/mainsail-crew/mainsail/releases/latest/download/mainsail.zip && unzip mainsail.zip && rm mainsail.zip
+```
+
+5) INSTALL NGINX
+```
+cd ~
 sudo apt update
 sudo apt install nginx
 ```
 
-5) Insert an NGINX configuration file for web UI:
+6) Insert an NGINX configuration file for web UI:
 ENTER THESE COMMMANDS
 ```
 sudo nano /etc/nginx/sites-available/printer                           
@@ -86,10 +240,25 @@ server {
     server_name _;   # Catch-all
     client_max_body_size 100M;
 
-    # Serve the static UI for all requests
+    # Disable proxy request buffering
+    proxy_request_buffering off;
+
+    # Serve the main UI requests
     location / {
-        root /home/gohrhyyan/repos/ic-designstudy-groupproj/web-ui/dist;
+        root /home/pi/ic-designstudy-groupproj/web-ui/dist;
         try_files $uri $uri/ /index.html;
+    }
+
+    # Mainsail UI at /pro path
+    location /pro {
+        root /home/pi/mainsail;
+        index index.html;
+        try_files $uri $uri/ /pro/index.html;
+        
+        # Handle caching for index.html
+        location = /pro/index.html {
+            add_header Cache-Control "no-store, no-cache, must-revalidate";
+        }
     }
 
     # Proxy for Moonraker API calls
@@ -148,21 +317,27 @@ server {
 ```
 
 
-5) give NGINX perms
+7) give NGINX perms
 ```
-sudo usermod -a -G gohrhyyan www-data
+# Add www-data to pi group (allows read access)
+sudo usermod -a -G pi www-data
 
 # Set group ownership
-sudo chown -R gohrhyyan:gohrhyyan /home/gohrhyyan/repos/ic-designstudy-groupproj
+sudo chown -R pi:www-data /home/pi/ic-designstudy-groupproj
 
 # Set directory permissions (755 for directories)
-sudo find /home/gohrhyyan/repos/ic-designstudy-groupproj -type d -exec chmod 755 {} \;
+sudo find /home/pi/ic-designstudy-groupproj -type d -exec chmod 755 {} \;
 
 # Set file permissions (644 for files)
-sudo find /home/gohrhyyan/repos/ic-designstudy-groupproj -type f -exec chmod 644 {} \;
+sudo find /home/pi/ic-designstudy-groupproj -type f -exec chmod 644 {} \;
+
+# Set permissions for Mainsail directory
+sudo chown -R pi:www-data /home/pi/mainsail
+sudo find /home/pi/mainsail -type d -exec chmod 755 {} \;
+sudo find /home/pi/mainsail -type f -exec chmod 644 {} \;
 ```
 
-6) Enable the site
+8) Enable the site
 ```
 sudo ln -s /etc/nginx/sites-available/printer /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default # Remove default site
