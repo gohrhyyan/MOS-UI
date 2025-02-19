@@ -7,6 +7,7 @@ DEPLOYMENT STEPS
 1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail. Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
 
 use this for moonraker configuration:
+```
 [server]
 host: 0.0.0.0
 port: 7125
@@ -67,16 +68,30 @@ path: ~/mainsail
 [machine]
 provider: none
 validate_service: False
+```
 
-2) CD into /home/gohrhyyan/repos Clone https://github.com/gohrhyyan/ic-designstudy-groupproj
+2) PULL OUR REPO
+```
+mkdir repos
+cd repos
+git clone https://github.com/gohrhyyan/ic-designstudy-groupproj
+```
 
-3) sudo apt update, sudo apt install nginx
+4) INSTALL NGINX
+```
+cd
+sudo apt update
+sudo apt install nginx
+```
 
-4) Insert an NGINX configuration file for web UI:
-
+5) Insert an NGINX configuration file for web UI:
+ENTER THESE COMMMANDS
+```
 sudo nano /etc/nginx/sites-available/printer                                      
-  GNU nano 7.2                                  /etc/nginx/sites-available/printer                                            
-
+                                
+```
+PASTE:
+```
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -180,10 +195,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
-
+```
 
 
 5) give NGINX perms
+```
 sudo usermod -a -G gohrhyyan www-data
 
 # Set group ownership
@@ -194,10 +210,12 @@ sudo find /home/gohrhyyan/repos/ic-designstudy-groupproj -type d -exec chmod 755
 
 # Set file permissions (644 for files)
 sudo find /home/gohrhyyan/repos/ic-designstudy-groupproj -type f -exec chmod 644 {} \;
-
+```
 
 6) Enable the site
+```
 sudo ln -s /etc/nginx/sites-available/printer /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default # Remove default site
 sudo nginx -t # Test configuration
 sudo systemctl restart nginx
+```
