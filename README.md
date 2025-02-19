@@ -87,8 +87,7 @@ sudo apt install nginx
 5) Insert an NGINX configuration file for web UI:
 ENTER THESE COMMMANDS
 ```
-sudo nano /etc/nginx/sites-available/printer                                      
-                                
+sudo nano /etc/nginx/sites-available/printer                           
 ```
 PASTE:
 ```
