@@ -1,4 +1,5 @@
-![image](https://github.com/user-attachments/assets/b172adfb-9a0b-4fe7-a8f0-8c4e5a934b20)
+![image](https://github.com/user-attachments/assets/96bd17d9-3039-4a38-a935-41a04bb27e19)
+
 # ic-designstudy-groupproj
 web-ui - the custom MOS UI hosted on NGINX
     src/
