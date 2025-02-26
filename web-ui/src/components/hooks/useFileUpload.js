@@ -104,6 +104,10 @@ const useFileUpload = ({ currentFiles, showToast, handleFileUploadSuccess }) => 
       setIsUploading(false);
     }
   }, [currentFiles, showToast, handleFileUploadSuccess]);
+  return {
+    uploadFile,
+    isUploading
+  };
 };
 
 export default useFileUpload;

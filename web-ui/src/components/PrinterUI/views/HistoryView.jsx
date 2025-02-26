@@ -50,26 +50,22 @@ const FileHistoryView = ({ setSelectedView, currentFiles, setPrintDetails }) => 
     </div>
   );
 
-  // Function to render file list using sorted files
-  const FileList = () => (
-    <div className="flex-1 overflow-y-auto">
-      {sortedFiles.map((file, index) => (
-        <FileItem key={`${file.path}-${index}`} file={file} />
-      ))}
-    </div>
-  );
-
   return (
+    // We'll use the ResponsiveContainer with the allowContentScroll prop
     <ResponsiveContainer>
+      {/* TopBar stays fixed */}
       <TopBar 
         title="File History" 
         showBack={true} 
         onBack={() => setSelectedView('home')}
       />
       
-      <div className="flex-1 flex flex-col p-4">
+      {/* This div will have scrolling content */}
+      <div className="flex-1 flex flex-col p-4 overflow-auto">
         {sortedFiles && sortedFiles.length > 0 ? (
-          <FileList />
+          sortedFiles.map((file, index) => (
+            <FileItem key={`${file.path}-${index}`} file={file} />
+          ))
         ) : (
           <EmptyState />
         )}
