@@ -9,8 +9,9 @@ const useMoonrakerSocket = () => {
 
   //initialise states for the socket, printer state, and error
   const [socket, setSocket] = useState(null);
-  const [printerState, setPrinterState] = useState(null);
   const [error, setError] = useState(null);
+  const [klippyState, setKlippyState] = useState(null);
+  const [printStats, setPrintStats] = useState(null);
   
   // Use refs for pending messages to avoid race conditions, when two or more threads can access shared data and they try to change it at the same time.
   // i.e pass the correct message to the correct thread.
@@ -54,15 +55,6 @@ const useMoonrakerSocket = () => {
         console.log('WebSocket connected');
         setSocket(ws);
         setError(null);
-        
-        // Query initial server info
-        // each outgoing message gets a unique ID
-        // incrementing from the current value of messageIdRef, and automatically updating messageIdRef
-        ws.send(JSON.stringify({
-          jsonrpc: "2.0",
-          method: "server.info",
-          id: messageIdRef.current++
-        }));
       };
 
       // onmessage is called when a message is received from the server
@@ -106,19 +98,6 @@ const useMoonrakerSocket = () => {
               pendingMessagesRef.current.delete(data.id);
             }
           }
-          
-          // Handle printer state updates
-          if (data.method === 'notify_status_update') {
-            // access the state of the printer from the data
-            if (data.params[0]?.status?.print_stats?.state) {
-              // update our printer state
-              setPrinterState(data.params[0].status.print_stats.state);
-            }
-            // handle the case where the printer is disconnected
-          } else if (data.method === 'notify_klippy_disconnected') {
-            setPrinterState('disconnected');
-          }
-          // close the main try block and log any errors
         } catch (err) {
           console.error('Error processing message:', err);
         }
@@ -127,10 +106,9 @@ const useMoonrakerSocket = () => {
       // onclose is called when the connection is closed
       ws.onclose = (event) => {
         console.log('WebSocket closed:', event.code);
-        // set the socket, and printer state to null
+        // set the socket
         setSocket(null);
-        setPrinterState(null);
-        
+
         // clear pending messages with an error
         clearPendingMessages(new Error(`Connection closed: ${event.reason || 'Unknown reason'}`));
         
@@ -217,11 +195,36 @@ const useMoonrakerSocket = () => {
     };
   }, []);
 
+  // Query initial server info
+
+// Query initial server info
+const getPrinterStates = useCallback(async () => {
+  // Function to get the current Klippy state
+  try {
+    // Send a message to the server to get the server info, and set the klippy state
+    const serverInfoResponse = await sendMessage("server.info", {});
+    setKlippyState(serverInfoResponse.klippy_state);
+
+    const printerObjectsResponse = await sendMessage("printer.objects.query", { 
+      "objects": { "print_stats": null }
+    });
+    setPrintStats(printerObjectsResponse.status.print_stats);
+    
+    return {
+      klippyState: serverInfoResponse.klippy_state,
+      printStats: printerObjectsResponse.status.print_stats
+    };
+  } catch (error) {
+    console.error("Error fetching Klippy state:", error);
+    return null;
+  }
+}, [sendMessage]);
+  
   // return the printer state, the send message function, and the socket to the caller of useMoonrakerSocket()
   return {
-    printerState,
     sendMessage,
-    socket
+    socket,
+    getPrinterStates
   };
 };
 

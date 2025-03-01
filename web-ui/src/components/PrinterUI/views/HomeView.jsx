@@ -5,6 +5,7 @@ import PrinterImage from '../../../assets/Printer.png';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import useFileUpload from '../../hooks/useFileUpload';
 
+
 const HomeView = ({ 
   setSelectedView, 
   showToast, 
@@ -12,16 +13,15 @@ const HomeView = ({
   currentFiles, 
   setCurrentFiles, 
   sendMessage, 
-  socket, 
-  printerState
+  socket
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
   // Fetch files on component mount
   useEffect(() => {
+    if (!socket) return;
     const fetchFiles = async () => {
-      if (socket != null) {
         try {
           const response = await sendMessage("server.files.list", {
             "root": "gcodes"
@@ -30,8 +30,6 @@ const HomeView = ({
           console.log('Set Files:', currentFiles);
         } catch (error) {
           console.error('Error fetching files:', error);
-          showToast('Failed to fetch files');
-        }
       }
     };
     fetchFiles();

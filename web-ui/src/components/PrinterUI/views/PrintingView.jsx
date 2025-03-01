@@ -53,8 +53,7 @@ const ProgressBar = ({ progress }) => (
   </div>
 );
 
-const PrintingView = ({ setSelectedView, printDetails}) => {
-  const [isPaused, setIsPaused] = useState(false);
+const PrintingView = ({ setSelectedView, printDetails, isPaused, setIsPaused}) => {
   const [showStopDialog, setShowStopDialog] = useState(false);
   const [printStatus, setPrintStatus] = useState('printing');
   const filename = fileUtils.getFilename(printDetails.path);
