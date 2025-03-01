@@ -21,7 +21,7 @@ const PrinterUI = () => {
     // Stores information about the current print
     const [printDetails, setPrintDetails] = useState(null);
 
-    // Initialize WebSocket connection
+    // Initialize WebSocket connection, get state information and sendMessage function
     const { printerState, sendMessage, socket } = useMoonrakerSocket();
 
     const [currentFiles, setCurrentFiles] = useState([]);
@@ -61,6 +61,8 @@ const PrinterUI = () => {
                 <PreparePrintView 
                     setSelectedView={setSelectedView}
                     printDetails={printDetails}
+                    sendMessage={sendMessage}
+                    showToast={showToast}
                 />
             )}
             
