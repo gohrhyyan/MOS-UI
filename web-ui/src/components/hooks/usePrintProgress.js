@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 
 // This hook centralizes all printer state management
-export const usePrintProgress = (sendMessage) => {
+export const usePrintProgress = (socket, sendMessage) => {
   // Core printer state
   const [printerState, setPrinterState] = useState({
     printStatus: 'idle',     // Current status: 'idle', 'printing', 'paused', etc.
@@ -32,7 +32,6 @@ export const usePrintProgress = (sendMessage) => {
 
   // Process WebSocket messages from the printer
   const processWebSocketUpdate = useCallback((message) => {
-
     // Check message type and update state accordingly
     if (message.method === "notify_status_update") {
       // Handle status updates (progress, temperatures, etc.)
@@ -98,7 +97,7 @@ export const usePrintProgress = (sendMessage) => {
       }
       
     }
-  }, [printerState.estimatedTime, printerState.elapsedTime, updatePrinterState]);
+  }, [updatePrinterState]);
 
 
   // When initialization is complete, set loading to false
@@ -110,8 +109,8 @@ export const usePrintProgress = (sendMessage) => {
   // Initialize printer state automatically when the hook mounts
   useEffect(() => {
     // Only run initialization if sendMessage is available
-    if (!sendMessage) {
-      console.warn("Cannot initialize printer state: sendMessage function not provided");
+    if (!socket) {
+      console.warn("Cannot initialize printer, socket not open");
       return;
     }
     
@@ -160,11 +159,10 @@ export const usePrintProgress = (sendMessage) => {
     
     initializeState();
     
-  }, [sendMessage, updatePrinterState, completeInitialization]);
+  }, [socket]);
 
   return {
     printerState,
-    updatePrinterState,
     processWebSocketUpdate
   };
 };
