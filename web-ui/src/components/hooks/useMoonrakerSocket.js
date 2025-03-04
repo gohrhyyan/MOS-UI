@@ -10,8 +10,6 @@ const useMoonrakerSocket = () => {
   //initialise states for the socket, printer state, and error
   const [socket, setSocket] = useState(null);
   const [error, setError] = useState(null);
-  const [klippyState, setKlippyState] = useState(null);
-  const [printStats, setPrintStats] = useState(null);
   
   // Use refs for pending messages to avoid race conditions, when two or more threads can access shared data and they try to change it at the same time.
   // i.e pass the correct message to the correct thread.
@@ -195,37 +193,11 @@ const useMoonrakerSocket = () => {
     };
   }, []);
 
-  // Query initial server info
-
-// Query initial server info
-const getPrinterStates = useCallback(async () => {
-  // Function to get the current Klippy state
-  try {
-    // Send a message to the server to get the server info, and set the klippy state
-    const serverInfoResponse = await sendMessage("server.info", {});
-    setKlippyState(serverInfoResponse.klippy_state);
-
-    const printerObjectsResponse = await sendMessage("printer.objects.query", { 
-      "objects": { "print_stats": null }
-    });
-    setPrintStats(printerObjectsResponse.status.print_stats);
-    
-    return {
-      klippyState: serverInfoResponse.klippy_state,
-      printStats: printerObjectsResponse.status.print_stats
-    };
-  } catch (error) {
-    console.error("Error fetching Klippy state:", error);
-    return null;
-  }
-}, [sendMessage]);
-  
   // return the printer state, the send message function, and the socket to the caller of useMoonrakerSocket()
   return {
     sendMessage,
     socket,
-    getPrinterStates
+    error
   };
 };
 
-export default useMoonrakerSocket;

@@ -18,17 +18,12 @@ const PrinterUI = () => {
     // Toast state, null when hidden, string message when shown.
     const [toastMessage, setToastMessage] = useState(null);
 
-    // Stores information about the current print
-    const [printDetails, setPrintDetails] = useState(null);
-
     // Initialize WebSocket connection, get state information and sendMessage function
     const { sendMessage, socket, getPrinterStates } = useMoonrakerSocket();
 
     const [currentFiles, setCurrentFiles] = useState([]);
 
-    const [isPaused, setIsPaused] = useState(false);
-
-
+    
     // Function to show the toast notification
     // Sets showToast to true, then uses a timeout to hide it after 3 seconds
     const showToast = (message) => {
