@@ -21,6 +21,7 @@ export const usePrinterState = (socket, sendMessage) => {
       ...currentState,
       ...newState
     }));
+    console.log("Printer State Updated" , printerState)
   }, []);
 
 
