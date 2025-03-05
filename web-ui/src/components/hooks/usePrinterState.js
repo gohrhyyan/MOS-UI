@@ -6,11 +6,10 @@ import { useState, useEffect, useCallback } from 'react';
 export const usePrinterState = (socket, sendMessage) => {
   // Core printer state
   const [printerState, setPrinterState] = useState({
-    printStatus: 'idle',     // Current status: 'idle', 'printing', 'paused', etc.
+    printStatus: null,     // Current status: 'idle', 'printing', 'paused', etc.
     filename: null,          // Current file being printed
     elapsedTime: 0,          // Time elapsed in seconds since print started
     estimatedTime: 0,        // Estimated total time in seconds
-    isLoading: true,         // Loading state while initializing
   });
 
 
@@ -21,14 +20,7 @@ export const usePrinterState = (socket, sendMessage) => {
       ...currentState,
       ...newState
     }));
-    console.log("Printer State Updated" , printerState)
-  }, []);
-
-
-  // When initialization is complete, set loading to false
-  const completeInitialization = useCallback(() => {
-    updatePrinterState({ isLoading: false });
-  }, [updatePrinterState]);  
+  }, [setPrinterState]);
 
   // function to refresh state HAVING A PRINTING OR PAUSED STATE IS THE ONLY VALID WAY TO SWITCH TO PRINTING VIEW.
   // IF HISTORY VIEW OR PREPARE PRINT VIEW WANTS TO SWITH TO PRINTING VIEW, IT SHOULD CALL THIS FUNCTION
@@ -42,26 +34,26 @@ export const usePrinterState = (socket, sendMessage) => {
       const printerObjectsResponse = await sendMessage("printer.objects.query", {"objects": { "print_stats": null }});
 
       // Update printer state with initial values
-      updatePrinterState({printStatus: printerObjectsResponse.status.print_stats.state});
+      updatePrinterState({printStatus: printerObjectsResponse.status.print_stats.state, 
+        filename: printerObjectsResponse.status.print_stats.filename
+      });
       
       // If we're printing a file, get its metadata
-      if (printerState.printStatus === 'printing' || printerState.printStatus === 'paused') {
+      if (printerObjectsResponse.status.print_stats.state === 'printing' || printerObjectsResponse.status.print_stats.state === 'paused') {
         const metadataResponse = await sendMessage("server.files.metadata", { 
-          "filename": printerState.filename 
+           filename: printerObjectsResponse.status.print_stats.filename
         });
         
-        // Process file metadata
-        if (metadataResponse) {
-          updatePrinterState({
-            estimatedTime: metadataResponse.estimated_time || 0,
-            elapsedTime: printerObjectsResponse.status.print_stats.print_duration
-          });
-        }  
+        updatePrinterState({
+          estimatedTime: metadataResponse.estimated_time || 0,
+          elapsedTime: printerObjectsResponse.status.print_stats.print_duration
+        });
       }
-      console.log("printer state updated")
       
     } catch (error) {console.error("Error refreshing printer state:", error);}
+      return;
   }, [sendMessage]);
+
 
   // Process WebSocket messages from the printer
   const processWebSocketUpdate = useCallback((message) => {
@@ -78,17 +70,17 @@ export const usePrinterState = (socket, sendMessage) => {
       }
     }
 
-
     else if (message.method === "notify_gcode_response") {
       // Handle direct GCODE responses (pause, resume, cancel)
       const response = message.params[0];
       if (response.includes("// PAUSE called with")) {
-        updatePrinterState({ printStatus: 'paused' });
+        refreshState();
       } 
       else if (response.includes("// RESUME called with")) {
-        updatePrinterState({ printStatus: 'printing' });
+        refreshState();
       }
       else if (response.includes("File opened:")) {
+        // When a new print starts, refresh the state
         refreshState()
       }
     }
@@ -97,15 +89,9 @@ export const usePrinterState = (socket, sendMessage) => {
       // Handle job history updates (completed prints, cancelled jobs, etc.)
       const historyData = message.params[0];
       if (historyData.action === "started") {
-        // When a new print starts, reset progress and update status
-        updatePrinterState({
-          printStatus: 'printing',
-          filename: historyData.job.filename,
-          elapsedTime: 0,
-          estimatedTime: historyData.job.metadata.estimated_time || 0 
-        });
+        // other call for when a new print starts, refresh the state
+        refreshState()
       }
-
 
       else if (historyData.action === "finished") {
         // When a print is finished, reset to idle state
@@ -120,6 +106,8 @@ export const usePrinterState = (socket, sendMessage) => {
     }
   }, [updatePrinterState, refreshState]);
 
+
+
   // Initialize printer state automatically when the hook mounts
   useEffect(() => {
     // Only run initialization if sendMessage is available
@@ -127,14 +115,14 @@ export const usePrinterState = (socket, sendMessage) => {
       console.warn("Cannot initialize printer, socket not open");
       return;
     }
-    
-    const initializeState = async () => {
       refreshState();
-      completeInitialization();
-    };
-    
-    initializeState();
   }, [socket]);
+
+  // Long in console whenver there is a change to state
+  useEffect(() => {
+    console.log("printer state updated", printerState)
+  }, [printerState]);
+
 
   return {
     printerState,

@@ -1,32 +1,78 @@
-import { fileUtils } from '../../utils/fileUtils';
 import React, { useState, useEffect } from 'react';
 import { Printer } from 'lucide-react';
-import QualitySpeedSlider from '../common/QualitySpeedSlider';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
-import { calculateAdjustedTime } from '../../utils/timeUtils';
-// No need to import benchy image since we're using a placeholder
+import QualitySpeedSlider from '../common/QualitySpeedSlider';
+
+// Helper function to format file size
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return bytes + ' B';
+  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  else return (bytes / 1048576).toFixed(1) + ' MB';
+};
+
+// Helper function to get filename from path
+const getFilename = (path) => {
+  if (!path) return 'Unknown file';
+  return path.split('/').pop();
+};
+
+// Helper function to calculate adjusted time based on quality setting
+const calculateAdjustedTime = (baseTimeMs, sliderValue) => {
+  // Default slider has 3 steps (0-4), with 2 being normal speed
+  const speedFactor = sliderValue < 2 ? 1 + (2 - sliderValue) * 0.25 : 1 / (1 + (sliderValue - 2) * 0.25);
+  return baseTimeMs * speedFactor;
+};
+
+// Default base time for calculation in milliseconds (30 minutes)
 const baseTimeMs = 30 * 60 * 1000;
 
-const PreparePrintView = ({ setSelectedView, printDetails, sendMessage, showToast }) => {
-  const [sliderValue, setSliderValue] = useState(2);
+const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshState }) => {
+  // State for the component
+  const [sliderValue, setSliderValue] = useState(2); // Default to middle/normal quality
   const [thumbnail, setThumbnail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [estimatedTime, setEstimatedTime] = useState(baseTimeMs);
   
-  const adjustedTime = calculateAdjustedTime(baseTimeMs, sliderValue);
-  const filename = fileUtils.getFilename(printDetails.path);
-  const formattedSize = fileUtils.formatFileSize(printDetails.size);
+  // Computed values
+  const filename = getFilename(fileUploadDetails?.filename);
+  const formattedSize = formatFileSize(fileUploadDetails?.size || 0);
+  const adjustedTime = calculateAdjustedTime(estimatedTime, sliderValue);
 
-  // Fetch thumbnail when the component mounts
+  // Fetch thumbnail and metadata when the component mounts
   useEffect(() => {
-    const fetchThumbnail = async () => {
+    const fetchFileDetails = async () => {
       try {
         // Show loading state while fetching
         setIsLoading(true);
         
+        if (!fileUploadDetails?.filename) {
+          console.warn('No file details available');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Get file metadata to get estimated time
+        try {
+          const metadata = await sendMessage("server.files.metadata", {
+            "filename": fileUploadDetails.filename
+          });
+          
+          console.log('File metadata:', metadata);
+          
+          // If we have estimated time in the metadata, use it
+          if (metadata && metadata.estimated_time) {
+            // Convert to milliseconds (API returns seconds)
+            setEstimatedTime(metadata.estimated_time * 1000);
+          }
+        } catch (error) {
+          console.error('Error fetching metadata:', error);
+          // Continue anyway to try getting thumbnails
+        }
+        
         // Make WebSocket request to get file thumbnails
         const response = await sendMessage("server.files.thumbnails", {
-          "filename": printDetails.path
+          "filename": fileUploadDetails.filename
         });
         
         console.log('Thumbnail response:', response);
@@ -44,10 +90,6 @@ const PreparePrintView = ({ setSelectedView, printDetails, sendMessage, showToas
           const selectedThumbnail = sortedThumbnails[0];
           
           if (selectedThumbnail && selectedThumbnail.thumbnail_path) {
-            // Based on the response format you shared, we need to construct a URL for the thumbnail
-            // The exact format will depend on your server setup
-            // This is a common pattern, adjust as needed for your environment
-            
             // Construct the URL for the thumbnail
             const thumbnailUrl = `/server/files/gcodes/${selectedThumbnail.thumbnail_path}`;
             
@@ -64,19 +106,18 @@ const PreparePrintView = ({ setSelectedView, printDetails, sendMessage, showToas
           setThumbnail(null);
         }
       } catch (error) {
-        console.error('Error fetching thumbnail:', error);
-        // Don't show toast error since the fallback image is fine
+        console.error('Error fetching file details:', error);
         setThumbnail(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Only fetch if we have a valid printDetails
-    if (printDetails && printDetails.path) {
-      fetchThumbnail();
+    // Only fetch if we have valid fileUploadDetails
+    if (fileUploadDetails) {
+      fetchFileDetails();
     }
-  }, [printDetails, sendMessage]);
+  }, [fileUploadDetails, sendMessage]);
 
   // Handler for starting the print
   const handlePrint = async () => {
@@ -85,14 +126,15 @@ const PreparePrintView = ({ setSelectedView, printDetails, sendMessage, showToas
       
       // Send command to start the print
       await sendMessage("printer.print.start", {
-        "filename": printDetails.path
+        "filename": fileUploadDetails.filename
       });
       
       // Show success message
       showToast(`Print started: ${filename}`);
       
-      // Navigate to the printing view
-      setSelectedView('printing');
+      // Refresh printer state to update UI
+      refreshState();
+      
     } catch (error) {
       console.error('Error starting print:', error);
       showToast(`Failed to start print: ${error.message}`);
@@ -105,7 +147,9 @@ const PreparePrintView = ({ setSelectedView, printDetails, sendMessage, showToas
       <TopBar 
         title="Preview" 
         showBack={true} 
-        onBack={() => setSelectedView('home')}
+        // Note: We don't have setSelectedView passed as a prop, so we use refreshState instead
+        // This will take us back to the home view if we're not printing
+        onBack={() => refreshState()}
       />
       <div className="flex-1 flex flex-col p-4">
         <div className="w-full aspect-square bg-gray-100 rounded-lg mb-2 relative">
