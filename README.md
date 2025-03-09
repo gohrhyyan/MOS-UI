@@ -1,12 +1,12 @@
 ![image](https://github.com/user-attachments/assets/dd83a009-5853-41ed-8b8a-0183b442ee0d)
 
-
 # ic-designstudy-groupproj
 
 DEPLOYMENT STEPS
 Install Raspberry PI OS 64bit lite, ensure that username is "pi"
 
-1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail. Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
+1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail, we'll do a custom instal for this.
+2) Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
 
 install dependancies
 ```
@@ -454,3 +454,6 @@ sudo ln -s /etc/nginx/sites-available/printer /etc/nginx/sites-enabled/
 sudo nginx -t # Test configuration
 sudo systemctl restart nginx
 ```
+
+Lastly, we'll need to install crowsnest to handle webcam streaming,
+follow instructions in https://crowsnest.mainsail.xyz/setup/installation
