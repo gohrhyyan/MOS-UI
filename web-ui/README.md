@@ -33,7 +33,7 @@ Currently, two official plugins are available:
 ```
 
 
-
+```
   // Core printer state object
   const [printerState, setPrinterState] = useState({
     printStatus: 'idle',     // Current status: 'idle', 'printing', 'paused', etc.
@@ -44,10 +44,13 @@ Currently, two official plugins are available:
     isLoading: true,         // Loading state while initializing
     fileDetails: null,       // Detailed file metadata
   });
+```
 
 
 Important Websocket API information for state management:
+
 "printer.objects.query" Return
+```
 {
   "id": 3,
   "jsonrpc": "2.0",
@@ -69,8 +72,10 @@ Important Websocket API information for state management:
     }
   }
 }
+```
 
 Then, pull additional job history details
+```
 "method": "server.files.metadata",
     "params": {
         "filename": "{filename}"
@@ -109,11 +114,10 @@ Then, pull additional job history details
   },
   "id": 4
 }
-
-
-
+```
 
 Print Start Object:
+```
 {
   "jsonrpc": "2.0",
   "method": "notify_history_changed",
@@ -162,8 +166,10 @@ Print Start Object:
     }
   ]
 }
+```
 
 PAUSE object:
+```
 {
   "jsonrpc": "2.0",
   "method": "notify_gcode_response",
@@ -171,7 +177,10 @@ PAUSE object:
     "// PAUSE called with"
   ]
 }
+```
 
+Resume object
+```
 {
   "jsonrpc": "2.0",
   "method": "notify_gcode_response",
@@ -179,9 +188,10 @@ PAUSE object:
     "// RESUME called with"
   ]
 }
+```
 
 Job Finished Object
-
+```
 {
   "jsonrpc": "2.0",
   "method": "notify_history_changed",
@@ -211,7 +221,9 @@ Job Finished Object
     }
   ]
 }
-
+```
+OR
+```
 {
   "jsonrpc": "2.0",
   "method": "notify_history_changed",
@@ -241,4 +253,4 @@ Job Finished Object
     }
   ]
 }
-
+```
