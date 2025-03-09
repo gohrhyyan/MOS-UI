@@ -10,6 +10,7 @@ Install Raspberry PI OS 64bit lite, ensure that username is "pi"
 3) Helpful videos for installing Klipper: https://youtu.be/nI8o6yQRxpY?si=SBUc8BNKDtQh0sdx
    https://www.youtube.com/watch?v=yINdrywvaEU&t=679s
 5) Helpful video for configuring GPIO for Klipper on the RPI: https://www.youtube.com/watch?v=ZOL-motmkos
+6) Good starting point for klipper config https://klipper.discourse.group/t/delta-printer-w-btt-skr-pico-v1-0-board/18798?utm_source=chatgpt.com
 
 install dependancies
 ```
