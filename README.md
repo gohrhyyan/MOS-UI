@@ -1,5 +1,5 @@
-![image](![image](https://github.com/user-attachments/assets/c0a2153f-170d-44e1-a8e2-d0e5c6b2b6bb)
-)
+![image](https://github.com/user-attachments/assets/dd83a009-5853-41ed-8b8a-0183b442ee0d)
+
 
 # ic-designstudy-groupproj
 
