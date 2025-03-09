@@ -32,9 +32,8 @@ Project structure for the custom MOS UI hosted on NGINX
         └── timeUtils.js
 ```
 
-
+Core printer state object:
 ```
-  // Core printer state object
   const [printerState, setPrinterState] = useState({
     printStatus: 'idle',     // Current status: 'idle', 'printing', 'paused', etc.
     filename: null,          // Current file being printed
