@@ -1,16 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react'; 
+import React, { useEffect, useState, useCallback, useRef } from 'react'; 
 import HomeView from './views/HomeView';  
 import PreparePrintView from './views/PreparePrintView';
 import PrintingView from './views/PrintingView';
 import HistoryView from './views/HistoryView';
 import Toast from './common/Toast'; 
 import useMoonrakerSocket from '../hooks/useMoonrakerSocket'; 
-
-// TEMP
-import BenchyImage from '../../assets/Benchy.png';
+import { usePrinterState } from '../hooks/usePrinterState';
 
 const PrinterUI = () => {
-    // STATE MANAGEMENT
 
     // Controls which view is currently displayed
     const [selectedView, setSelectedView] = useState('home');
@@ -18,16 +15,22 @@ const PrinterUI = () => {
     // Toast state, null when hidden, string message when shown.
     const [toastMessage, setToastMessage] = useState(null);
 
-    // Stores information about the current print
-    const [printDetails, setPrintDetails] = useState(null);
+    // Create a relay callback ref for passing messages to printer state
+    const relayFunctionRef = useRef(() => {});
 
     // Initialize WebSocket connection, get state information and sendMessage function
-    const { sendMessage, socket, getPrinterStates } = useMoonrakerSocket();
+    const { sendMessage, socket, error } = useMoonrakerSocket((data) => relayFunctionRef.current(data));
+
+    // Initialize printer state management
+    const { printerState, processWebSocketUpdate, refreshState } = usePrinterState(socket, sendMessage);
+
+    // set up the relay function once processWebSocketUpdate is available
+    useEffect(() => {
+        relayFunctionRef.current = processWebSocketUpdate;
+    }, [processWebSocketUpdate]);
 
     const [currentFiles, setCurrentFiles] = useState([]);
-
-    const [isPaused, setIsPaused] = useState(false);
-
+    const [fileUploadDetails, setFileUploadDetails] = useState(null);
 
     // Function to show the toast notification
     // Sets showToast to true, then uses a timeout to hide it after 3 seconds
@@ -36,44 +39,20 @@ const PrinterUI = () => {
         setTimeout(() => setToastMessage(null), 3000);
     };
 
-    const handleAlreadyPrinting = useCallback((stateInfo) => {
-        // If the printer is printing, set the print details and selected view accordingly
-        switch(stateInfo.printStats.state) {
-            case "printing":
-                setPrintDetails({ path: stateInfo.printStats.filename });
-                setSelectedView('printing');
-                setIsPaused(false);
-                break;
-            case "paused":
-                setPrintDetails({ path: stateInfo.printStats.filename });
-                setSelectedView('printing');
-                setIsPaused(true);
-                break;
-            default:
-                break;
-        }
-    }, []);
-
-    // Call the getKlippyState function when component mounts or socket changes
+    // Update the view based on printer state changes
     useEffect(() => {
-        // Only proceed if socket exists
-        if (!socket) return;
-        
-        // Start the async process but don't try to capture the return value directly
-        getPrinterStates()
-            .then(stateInfo => {
-                // This code runs after the Promise resolves                
-                // If we're already printing, handle that state
-                if (stateInfo) {
-                    handleAlreadyPrinting(stateInfo);
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching printer states:", error);
-            });
-            
-        // Note: We're NOT trying to capture the return value of getPrinterStates() directly
-    }, [socket]);
+        if (printerState.printStatus === 'printing' || printerState.printStatus === 'paused') {
+            setSelectedView('printing');
+        }
+        else {
+            setSelectedView('home');
+        }
+    }, [printerState.printStatus]);
+
+    // Refresh state when socket connection is established
+    useEffect(() => {
+            refreshState();
+    }, []);
 
     
     // The main render method - describes what the component looks like
@@ -89,7 +68,8 @@ const PrinterUI = () => {
                 <HomeView     
                     setSelectedView = {setSelectedView}
                     showToast = {showToast}
-                    setPrintDetails = {setPrintDetails}
+                    fileUploadDetails = {fileUploadDetails}
+                    setFileUploadDetails = {setFileUploadDetails}
                     currentFiles = {currentFiles}
                     setCurrentFiles = {setCurrentFiles}
                     sendMessage = {sendMessage}
@@ -100,10 +80,10 @@ const PrinterUI = () => {
             {/* Print view - shown when selectedView is 'prepare' */}
             {selectedView === 'prepare' && (
                 <PreparePrintView 
-                    setSelectedView={setSelectedView}
-                    printDetails={printDetails}
+                    fileUploadDetails={fileUploadDetails}
                     sendMessage={sendMessage}
                     showToast={showToast}
+                    refreshState={refreshState}
                 />
             )}
             
@@ -111,10 +91,9 @@ const PrinterUI = () => {
             {selectedView === 'printing' && (
                 <PrintingView
                     setSelectedView={setSelectedView}
-                    printDetails={printDetails}
-                    isPaused={isPaused}
-                    setIsPaused={setIsPaused}
-
+                    printerState={printerState}
+                    sendMessage={sendMessage}
+                    refreshState={refreshState}
                 />
             )}
 
@@ -122,7 +101,7 @@ const PrinterUI = () => {
                 <HistoryView
                     setSelectedView={setSelectedView}
                     currentFiles={currentFiles}
-                    setPrintDetails={setPrintDetails}
+                    setFileUploadDetails={setFileUploadDetails}
                 />
             )}
             

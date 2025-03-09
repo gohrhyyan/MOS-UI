@@ -4,17 +4,19 @@ import MOSLogo from '../../../assets/MOS.png';
 import PrinterImage from '../../../assets/Printer.png';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import useFileUpload from '../../hooks/useFileUpload';
+import { usePrinterState } from '../../hooks/usePrinterState';
 
 
 const HomeView = ({ 
   setSelectedView, 
   showToast, 
-  setPrintDetails, 
+  setFileUploadDetails, 
   currentFiles, 
   setCurrentFiles, 
   sendMessage, 
   socket
 }) => {
+
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -36,10 +38,10 @@ const HomeView = ({
   }, [socket]);
 
   // Handle successful file upload
-  const handleFileUploadSuccess = useCallback((fileDetails) => {
-    setPrintDetails(fileDetails);
+  const handleFileUploadSuccess = useCallback((fileUploadDetails) => {
+    setFileUploadDetails(fileUploadDetails);
     setSelectedView('prepare');
-  }, [setPrintDetails, setSelectedView]);
+  }, [setFileUploadDetails, setSelectedView]);
 
   // Initialize file upload handler
   const { uploadFile, isUploading } = useFileUpload({

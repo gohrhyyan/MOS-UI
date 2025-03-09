@@ -1,3 +1,4 @@
+// src/components/hooks/useMoonrakerSocket.js
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 const RECONNECT_DELAY = 5000;
@@ -5,13 +6,11 @@ const MESSAGE_TIMEOUT = 10000;
 
 // handle the connection to the Moonraker websocket
 // a websocket is like an api, but it's a sustained, two-way connection
-const useMoonrakerSocket = () => {
+const useMoonrakerSocket = (relayMessageToPrinterState) => {
 
   //initialise states for the socket, printer state, and error
   const [socket, setSocket] = useState(null);
   const [error, setError] = useState(null);
-  const [klippyState, setKlippyState] = useState(null);
-  const [printStats, setPrintStats] = useState(null);
   
   // Use refs for pending messages to avoid race conditions, when two or more threads can access shared data and they try to change it at the same time.
   // i.e pass the correct message to the correct thread.
@@ -63,41 +62,48 @@ const useMoonrakerSocket = () => {
         try {
           //parse the data from the event
           const data = JSON.parse(event.data);
+
           // Ignore proc_stat_update notifications - cpu statistics
           if (data.method === 'notify_proc_stat_update') {
             return; // return early
           }
 
-          // implicit else
-          // log the received data
-          console.log('Received:', data);
+          else {
+            // log the received data
+            console.log('Received:', data);
 
-          // Handle responses to our requests
-          // JSON-RPC protocol websockets pass the id of the message back to us in the response
-          // if the returned message contains an id, it is a response to a message we sent
-          if (data.id) {
-            // match the id of the received message to the id of a message that we sent.
-            const pendingMessage = pendingMessagesRef.current.get(data.id);
 
-            if (pendingMessage) {
-              // if a match is found, get the promise resolve and reject handlers, and the timeout ID for this message
-              const { resolve, reject, timeoutId } = pendingMessage;
+            // relay the message to state handler
+            relayMessageToPrinterState(data)
 
-              // Clear timeout since we got a response
-              clearTimeout(timeoutId);
-              
-              if (data.error) {
-                // if there is an error, reject the promise with the error message
-                reject(new Error(data.error.message || 'Unknown error'));
-              } else {
-                // otherwise, resolve the promise with the result
-                resolve(data.result);
+            // Handle responses to our requests
+            // JSON-RPC protocol websockets pass the id of the message back to us in the response
+            // if the returned message contains an id, it is a response to a message we sent
+            if (data.id) {
+              // match the id of the received message to the id of a message that we sent.
+              const pendingMessage = pendingMessagesRef.current.get(data.id);
+
+              if (pendingMessage) {
+                // if a match is found, get the promise resolve and reject handlers, and the timeout ID for this message
+                const { resolve, reject, timeoutId } = pendingMessage;
+
+                // Clear timeout since we got a response
+                clearTimeout(timeoutId);
+                
+                if (data.error) {
+                  // if there is an error, reject the promise with the error message
+                  reject(new Error(data.error.message || 'Unknown error'));
+                } else {
+                  // otherwise, resolve the promise with the result
+                  resolve(data.result);
+                }
+                
+                // clear the message from the pending messages
+                pendingMessagesRef.current.delete(data.id);
               }
-              
-              // clear the message from the pending messages
-              pendingMessagesRef.current.delete(data.id);
-            }
           }
+          }
+
         } catch (err) {
           console.error('Error processing message:', err);
         }
@@ -195,36 +201,11 @@ const useMoonrakerSocket = () => {
     };
   }, []);
 
-  // Query initial server info
-
-// Query initial server info
-const getPrinterStates = useCallback(async () => {
-  // Function to get the current Klippy state
-  try {
-    // Send a message to the server to get the server info, and set the klippy state
-    const serverInfoResponse = await sendMessage("server.info", {});
-    setKlippyState(serverInfoResponse.klippy_state);
-
-    const printerObjectsResponse = await sendMessage("printer.objects.query", { 
-      "objects": { "print_stats": null }
-    });
-    setPrintStats(printerObjectsResponse.status.print_stats);
-    
-    return {
-      klippyState: serverInfoResponse.klippy_state,
-      printStats: printerObjectsResponse.status.print_stats
-    };
-  } catch (error) {
-    console.error("Error fetching Klippy state:", error);
-    return null;
-  }
-}, [sendMessage]);
-  
   // return the printer state, the send message function, and the socket to the caller of useMoonrakerSocket()
   return {
     sendMessage,
     socket,
-    getPrinterStates
+    error
   };
 };
 
