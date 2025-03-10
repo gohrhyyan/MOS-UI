@@ -3,6 +3,8 @@ import { Printer } from 'lucide-react';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
 import QualitySpeedSlider from '../common/QualitySpeedSlider';
+import { Clock } from 'lucide-react';
+import { formatTime } from '../../utils/timeUtils';
 
 // Helper function to format file size
 const formatFileSize = (bytes) => {
@@ -14,30 +16,32 @@ const formatFileSize = (bytes) => {
 // Helper function to get filename from path
 const getFilename = (path) => {
   if (!path) return 'Unknown file';
-  return path.split('/').pop();
+  return path;
 };
 
+/*
 // Helper function to calculate adjusted time based on quality setting
 const calculateAdjustedTime = (baseTimeMs, sliderValue) => {
   // Default slider has 3 steps (0-4), with 2 being normal speed
   const speedFactor = sliderValue < 2 ? 1 + (2 - sliderValue) * 0.25 : 1 / (1 + (sliderValue - 2) * 0.25);
   return baseTimeMs * speedFactor;
 };
+*/
 
 // Default base time for calculation in milliseconds (30 minutes)
 const baseTimeMs = 30 * 60 * 1000;
 
-const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshState }) => {
+const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, showToast, refreshState }) => {
   // State for the component
-  const [sliderValue, setSliderValue] = useState(2); // Default to middle/normal quality
+  //const [sliderValue, setSliderValue] = useState(2); // Default to middle/normal quality
   const [thumbnail, setThumbnail] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState(baseTimeMs);
+  const [formattedSize, setFormattedSize] = useState(null);
   
   // Computed values
-  const filename = getFilename(fileUploadDetails?.filename);
-  const formattedSize = formatFileSize(fileUploadDetails?.size || 0);
-  const adjustedTime = calculateAdjustedTime(estimatedTime, sliderValue);
+  const filename = getFilename(selectedFilePath);
+ // const adjustedTime = calculateAdjustedTime(estimatedTime, sliderValue);
 
   // Fetch thumbnail and metadata when the component mounts
   useEffect(() => {
@@ -46,7 +50,7 @@ const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshSt
         // Show loading state while fetching
         setIsLoading(true);
         
-        if (!fileUploadDetails?.filename) {
+        if (!filename) {
           console.warn('No file details available');
           setIsLoading(false);
           return;
@@ -55,7 +59,7 @@ const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshSt
         // Get file metadata to get estimated time
         try {
           const metadata = await sendMessage("server.files.metadata", {
-            "filename": fileUploadDetails.filename
+            "filename": filename
           });
           
           console.log('File metadata:', metadata);
@@ -65,6 +69,12 @@ const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshSt
             // Convert to milliseconds (API returns seconds)
             setEstimatedTime(metadata.estimated_time * 1000);
           }
+
+          // If we have estimated time in the metadata, use it
+          if (metadata && metadata.size) {
+            // Convert 
+            setFormattedSize(formatFileSize(metadata.size));
+          }
         } catch (error) {
           console.error('Error fetching metadata:', error);
           // Continue anyway to try getting thumbnails
@@ -72,7 +82,7 @@ const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshSt
         
         // Make WebSocket request to get file thumbnails
         const response = await sendMessage("server.files.thumbnails", {
-          "filename": fileUploadDetails.filename
+          "filename": filename
         });
         
         console.log('Thumbnail response:', response);
@@ -114,10 +124,10 @@ const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshSt
     };
 
     // Only fetch if we have valid fileUploadDetails
-    if (fileUploadDetails) {
+    if (filename) {
       fetchFileDetails();
     }
-  }, [fileUploadDetails, sendMessage]);
+  }, [filename, sendMessage]);
 
   // Handler for starting the print
   const handlePrint = async () => {
@@ -126,7 +136,7 @@ const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshSt
       
       // Send command to start the print
       await sendMessage("printer.print.start", {
-        "filename": fileUploadDetails.filename
+        "filename": filename
       });
       
       // Show success message
@@ -147,9 +157,7 @@ const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshSt
       <TopBar 
         title="Preview" 
         showBack={true} 
-        // Note: We don't have setSelectedView passed as a prop, so we use refreshState instead
-        // This will take us back to the home view if we're not printing
-        onBack={() => refreshState()}
+        onBack={() => setSelectedView("home")}
       />
       <div className="flex-1 flex flex-col p-4">
         <div className="w-full aspect-square bg-gray-100 rounded-lg mb-2 relative">
@@ -195,11 +203,20 @@ const PreparePrintView = ({ fileUploadDetails, sendMessage, showToast, refreshSt
             </div>
         </div>
         
+        {/*
         <QualitySpeedSlider 
           sliderValue={sliderValue}
           setSliderValue={setSliderValue}
           adjustedTime={adjustedTime}
         />
+        */}
+
+        <div className="flex items-center justify-center mb-2 gap-2">
+          <Clock className="w-5 h-5 text-gray-600" />
+          <div className="text-2xl text-gray-800">
+            {formatTime(estimatedTime)}
+          </div>
+        </div>
         
         <button 
           onClick={handlePrint}

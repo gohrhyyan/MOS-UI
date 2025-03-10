@@ -10,11 +10,11 @@ import { usePrinterState } from '../../hooks/usePrinterState';
 const HomeView = ({ 
   setSelectedView, 
   showToast, 
-  setFileUploadDetails, 
+  setSelectedFilePath, 
   currentFiles, 
   setCurrentFiles, 
   sendMessage, 
-  socket
+  socket 
 }) => {
 
   const [isDragging, setIsDragging] = useState(false);
@@ -38,10 +38,10 @@ const HomeView = ({
   }, [socket]);
 
   // Handle successful file upload
-  const handleFileUploadSuccess = useCallback((fileUploadDetails) => {
-    setFileUploadDetails(fileUploadDetails);
+  const handleFileUploadSuccess = useCallback((uploadedFilePath) => {
+    setSelectedFilePath(uploadedFilePath);
     setSelectedView('prepare');
-  }, [setFileUploadDetails, setSelectedView]);
+  }, [setSelectedFilePath, setSelectedView]);
 
   // Initialize file upload handler
   const { uploadFile, isUploading } = useFileUpload({

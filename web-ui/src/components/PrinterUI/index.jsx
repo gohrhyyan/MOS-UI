@@ -30,7 +30,7 @@ const PrinterUI = () => {
     }, [processWebSocketUpdate]);
 
     const [currentFiles, setCurrentFiles] = useState([]);
-    const [fileUploadDetails, setFileUploadDetails] = useState(null);
+    const [selectedFilePath, setSelectedFilePath] = useState(null);
 
     // Function to show the toast notification
     // Sets showToast to true, then uses a timeout to hide it after 3 seconds
@@ -68,8 +68,8 @@ const PrinterUI = () => {
                 <HomeView     
                     setSelectedView = {setSelectedView}
                     showToast = {showToast}
-                    fileUploadDetails = {fileUploadDetails}
-                    setFileUploadDetails = {setFileUploadDetails}
+                    selectedFilePath = {selectedFilePath}
+                    setSelectedFilePath = {setSelectedFilePath}
                     currentFiles = {currentFiles}
                     setCurrentFiles = {setCurrentFiles}
                     sendMessage = {sendMessage}
@@ -80,7 +80,8 @@ const PrinterUI = () => {
             {/* Print view - shown when selectedView is 'prepare' */}
             {selectedView === 'prepare' && (
                 <PreparePrintView 
-                    fileUploadDetails={fileUploadDetails}
+                    setSelectedView={setSelectedView}
+                    selectedFilePath={selectedFilePath}
                     sendMessage={sendMessage}
                     showToast={showToast}
                     refreshState={refreshState}
@@ -101,7 +102,7 @@ const PrinterUI = () => {
                 <HistoryView
                     setSelectedView={setSelectedView}
                     currentFiles={currentFiles}
-                    setFileUploadDetails={setFileUploadDetails}
+                    setSelectedFilePath={setSelectedFilePath}
                 />
             )}
             

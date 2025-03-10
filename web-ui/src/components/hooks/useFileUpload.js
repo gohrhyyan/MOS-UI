@@ -79,17 +79,10 @@ const useFileUpload = ({ currentFiles, showToast, handleFileUploadSuccess }) => 
 
       // Parse the response as JSON
       const result = await response.json();
-      
-      // Create standardized file details object matching PrintFile interface
-      const fileDetails = {
-        path: result.item.path,
-        modified: Math.floor(Date.now() / 1000), // Current Unix timestamp
-        size: result.item.size,
-        permissions: result.item.permissions || "rw" // Default to "rw" if not provided
-      };
+      const uploadedFilePath = result.item.path
+      // Call the handleFileUploadSuccess function with the file name
+      handleFileUploadSuccess(uploadedFilePath);
 
-      // Call the handleFileUploadSuccess function with the file details
-      handleFileUploadSuccess(fileDetails);
       // return early if upload is successful
       return;
 

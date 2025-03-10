@@ -4,13 +4,13 @@ import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
 import { fileUtils } from '../../utils/fileUtils';
 
-const FileHistoryView = ({ setSelectedView, currentFiles, setPrintDetails }) => {
+const FileHistoryView = ({ setSelectedView, currentFiles, setSelectedFilePath }) => {
   // Sort files by modified timestamp in descending order (newest first)
   const sortedFiles = [...currentFiles].sort((a, b) => b.modified - a.modified);
 
   // Function to handle when a file is selected
   const handleFileSelect = (file) => {
-    setPrintDetails(file);
+    setSelectedFilePath(file.path);
     setSelectedView('prepare');
   };
 
