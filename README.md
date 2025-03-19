@@ -20,6 +20,11 @@ delete everthing under, and including
 On next boot your OS will use the dwc2 driver in the correct mode to support operation as a USB 
 gadget.
 
+on your host computer (UBUNTU or whatever)
+```
+sudo nmcli con add con-name usb-gadget type ethernet ifname enx162233445566 ipv4.method manual ipv4.address 10.0.0.2/24
+```
+
 1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail, we'll do a custom instal for this.
 2) Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
 3) Helpful videos for installing Klipper: https://youtu.be/nI8o6yQRxpY?si=SBUc8BNKDtQh0sdx
