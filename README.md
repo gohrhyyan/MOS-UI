@@ -47,6 +47,8 @@ use these 2 commands to change the network configuration.
 sudo nmcli device set enx162233445566 managed yes
 
 sudo nmcli con add con-name usb-gadget type ethernet ifname enx162233445566 ipv4.method manual ipv4.address 10.0.0.2/24
+
+sudo nmcli connection modify usb-gadget connection.autoconnect yes
 ```
 running ifconfig -a should show that our device now has an ip address
 ```
