@@ -27,6 +27,13 @@ On next boot your OS will use the dwc2 driver in the correct mode to support ope
 gadget.
 
 on your host computer (UBUNTU or whatever)
+
+plug in the RPI
+to validate the USB connection:
+```
+sudo dmesg | grep -i usb
+```
+
 ```
 ifconfig -a
 ```
