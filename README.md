@@ -50,6 +50,12 @@ sudo nmcli con add con-name usb-gadget type ethernet ifname enx162233445566 ipv4
 
 sudo nmcli connection modify usb-gadget connection.autoconnect yes
 ```
+or
+'''
+sudo nmcli con up usb-gadget
+'''
+you'll need to do this everyime you dis/connect
+
 running ifconfig -a should show that our device now has an ip address
 ```
 enx162233445566: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
