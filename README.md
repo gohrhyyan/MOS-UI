@@ -48,6 +48,17 @@ sudo nmcli device set enx162233445566 managed yes
 
 sudo nmcli con add con-name usb-gadget type ethernet ifname enx162233445566 ipv4.method manual ipv4.address 10.0.0.2/24
 ```
+running ifconfig -a should show that our device now has an ip address
+```
+enx162233445566: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 10.0.0.2  netmask 255.255.255.0  broadcast 10.0.0.255
+        inet6 fe80::db6c:355a:a2bc:e88e  prefixlen 64  scopeid 0x20<link>
+        ether 16:22:33:44:55:66  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 16 overruns 0  carrier 0  collisions 0
+```
 
 1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail, we'll do a custom instal for this.
 2) Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
