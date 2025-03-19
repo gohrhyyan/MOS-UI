@@ -4,7 +4,7 @@
 
 DEPLOYMENT STEPS
 Install Raspberry PI OS 32bit lite, ensure that username is "pi"
-1. Back up your config.txt:
+1. Back up your `config.txt`:
 ```
 sudo cp /boot/config.txt /boot/config.bak
 ```
@@ -17,11 +17,35 @@ delete everthing under, and including
 ```
 [CM5]
 ```
+Back up `/boot/cmdline.txt`
+sudo cp /boot/cmdline.txt /boot/cmdline.bak
+3. Using you preferred text editor add the following to the end of `/boot/cmdline.txt`, after 'rootwait' add a space and:
+```modules-load=dwc2,g_ether g_ether.dev_addr=12:22:33:44:55:6 g_ether.host_addr=16:22:33:44:55:66```
+Replace the MAC addresses above as required.
+The contents of /boot/cmdline.txt must be one a single line.
 On next boot your OS will use the dwc2 driver in the correct mode to support operation as a USB 
 gadget.
 
 on your host computer (UBUNTU or whatever)
 ```
+ifconfig -a
+```
+This will show all the connections, usb ethernet gadgets included.
+```
+enx162233445566: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        ether 16:22:33:44:55:66  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+```
+You can see that there is a missing `inet <ip-address>` field, so connections will not work.
+let's overwrite this.
+
+use these 2 commands to change the network configuration.
+```
+sudo nmcli device set enx162233445566 managed yes
+
 sudo nmcli con add con-name usb-gadget type ethernet ifname enx162233445566 ipv4.method manual ipv4.address 10.0.0.2/24
 ```
 
