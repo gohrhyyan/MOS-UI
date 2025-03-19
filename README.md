@@ -3,7 +3,22 @@
 # ic-designstudy-groupproj
 
 DEPLOYMENT STEPS
-Install Raspberry PI OS 64bit lite, ensure that username is "pi"
+Install Raspberry PI OS 32bit lite, ensure that username is "pi"
+1. Back up your config.txt:
+```
+sudo cp /boot/config.txt /boot/config.bak
+```
+2. Using your preferred text editor add the following to the end of /boot/config.txt
+```
+[all]
+dtoverlay=dwc2,dr_mode=peripheral
+```
+delete everthing under, and including
+```
+[CM5]
+```
+On next boot your OS will use the dwc2 driver in the correct mode to support operation as a USB 
+gadget.
 
 1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail, we'll do a custom instal for this.
 2) Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
