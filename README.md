@@ -26,8 +26,27 @@ The contents of /boot/cmdline.txt must be one a single line.
 On next boot your OS will use the dwc2 driver in the correct mode to support operation as a USB 
 gadget.
 
-on your host computer (UBUNTU or whatever)
+on your host computer 
+#WINDOWS 10/11
+Plug in the Pi and check device manager, you should see a new device that looks like this
+![image](https://github.com/user-attachments/assets/1822bc8d-3cd3-4526-bbf3-036f8a1e7b1c)
 
+Install Bonjour
+The Bonjour Print Services for Windows are needed to resolve the .local host adress of the Raspberry Pi. The program can be downloaded from here.
+
+Install Windows RNDIS Driver
+This step is required, if your Pi only shows up as a COM Port in device manager. Follow this page for further instructions.
+https://github.com/dukelec/mbrush/tree/master/doc/win_driver
+
+Optional: share network
+You can share your network connection from the Windows Host to the Raspberry Pi by going to Control Panel\Network and Internet\Network Connections. First, you need to identify the Rasbperry Pi Network Adapter by searching for USB Ethernet/RNDIS Gadget and remember the name of the adapter (you can also change it). Next, right click on the network you want to share, go to properties and then sharing.
+![image](https://github.com/user-attachments/assets/3ea4b962-870d-441b-8152-6e88689f6c18)
+
+Install MobaXTerm, you should be able to connect to the PI using SSH.
+https://mobaxterm.mobatek.net/
+
+
+#LINUX
 plug in the RPI
 to validate the USB connection:
 ```
@@ -74,7 +93,9 @@ enx162233445566: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
         TX packets 0  bytes 0 (0.0 B)
         TX errors 0  dropped 16 overruns 0  carrier 0  collisions 0
 ```
+You should now be able to use the command ssh to connect to the pi over USB
 
+#Pi environment setup
 1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail, we'll do a custom instal for this.
 2) Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
 3) Helpful videos for installing Klipper: https://youtu.be/nI8o6yQRxpY?si=SBUc8BNKDtQh0sdx
