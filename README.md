@@ -16,7 +16,11 @@ dtoverlay=dwc2,dr_mode=peripheral
 delete everthing under, and including
 ```
 [CM5]
+
+[CM4]
 ```
+these contain conflicting `dtoverlay` and `otg_mode` configurations that will cause SSH over USB to FAIL.
+
 Back up `/boot/cmdline.txt`
 sudo cp /boot/cmdline.txt /boot/cmdline.bak
 3. Using you preferred text editor add the following to the end of `/boot/cmdline.txt`, after 'rootwait' add a space and:
