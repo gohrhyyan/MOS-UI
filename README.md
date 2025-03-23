@@ -30,6 +30,22 @@ The contents of /boot/cmdline.txt must be one a single line.
 On next boot your OS will use the dwc2 driver in the correct mode to support operation as a USB 
 gadget.
 
+Use udev rules to enable the usb-ethernet connection when the cable is connected to a computer.
+```bash
+sudo nano /etc/udev/rules.d/80-usb0-up.rules
+```
+
+Add this line:
+```
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="usb0", RUN+="/sbin/ifconfig usb0 up"
+```
+
+Reload udev rules:
+```bash
+sudo udevadm control --reload-rules
+```
+This udev solution is brings the interface up whenever it's detected, not just at boot time.
+
 on your host computer 
 #WINDOWS 10/11
 Plug in the Pi and check device manager, you should see a new device that looks like this
