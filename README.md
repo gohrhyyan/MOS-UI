@@ -1,6 +1,17 @@
 ![image](https://github.com/user-attachments/assets/dd83a009-5853-41ed-8b8a-0183b442ee0d)
 
 # ic-designstudy-groupproj DEPLOYMENT STEPS
+# Flash klipper firmware to Mainboard.
+Unplug everything from mainboard and apply 2 jumpers as shown:
+Attach two jumpers as shown:
+![photo_2025-03-25_00-12-57](https://github.com/user-attachments/assets/2ff443e4-999e-4d36-a958-6f5ada28cfc0)
+
+Plug Mainboard into a PC via usb-c cable. a removable USB drive should appear. 
+Copy Klipper-UART.uf2 into the drive. It should disappear and re-appear. This means that the firmware flash has been successful.
+![image](https://github.com/user-attachments/assets/6ae23c41-8e7d-4d5a-9021-7d8faf67aaa8)
+
+
+
 
 # PI OS installation
 Install Bonjour Print Services for Windows: needed to resolve the .local host adress of the Raspberry Pi. The program can be downloaded from:
@@ -209,6 +220,78 @@ fill in these lines
 KLIPPER_ARGS="/home/pi/klipper/klippy/klippy.py /home/pi/printer_data/config/printer.cfg -l /home/pi/printer_data/logs/klippy.log -I /home/pi/printer_data/comms/klippy.serial -a /home/pi/printer_data/comms/klippy.sock"
 ```
 Save the file with CTRL+O and close the editor with CTRL+X.
+
+Apply klipper configuration
+`sudo nano /printer_data/config/printer.cfg`
+PASTE
+```
+#stealthchop_threshold: 999999
+
+[extruder]
+step_pin: gpio14
+dir_pin: !gpio13
+enable_pin: !gpio15
+microsteps: 16
+rotation_distance: 33.500
+nozzle_diameter: 0.4
+filament_diameter: 1.75
+heater_pin: gpio23
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: gpio27
+control: pid
+pid_Kp: 22.2
+pid_Ki: 1.08
+pid_Kd: 114
+min_temp: 0
+max_temp: 300
+max_extrude_cross_section:2
+
+[tmc2209 extruder]
+uart_pin: gpio9
+tx_pin: gpio8
+uart_address: 3
+run_current: 0.800
+#stealthchop_threshold: 999999
+
+[delayed_gcode bed_mesh_init]
+initial_duration: .01
+gcode:
+  BED_MESH_PROFILE LOAD=default
+
+[bed_mesh]
+speed: 20
+horizontal_move_z: 5
+mesh_radius: 80
+mesh_origin: 0, 0
+round_probe_count: 5
+mesh_pps: 2, 2
+algorithm: lagrange
+move_check_distance: 5
+split_delta_z: .025
+fade_start: 1
+fade_end: 10
+fade_target: 0
+
+#[filament_switch_sensor runout_sensor]
+#switch_pin: ^gpio16
+
+[firmware_retraction]
+retract_length: 2.5
+#   The length of filament (in mm) to retract when G10 is activated,
+#   and to unretract when G11 is activated (but see
+#   unretract_extra_length below). The default is 0 mm.
+retract_speed: 40
+#   The speed of retraction, in mm/s. The default is 20 mm/s.
+unretract_extra_length: 0
+#   The length (in mm) of *additional* filament to add when
+#   unretracting.
+unretract_speed: 40
+#   The speed of unretraction, in mm/s. The default is 10 mm/s..
+
+#[output_pin beeper]
+#pin: EXP1_1
+```
+
 
 start klipper 
 ```
@@ -586,6 +669,7 @@ sudo ln -s /etc/nginx/sites-available/printer /etc/nginx/sites-enabled/
 sudo nginx -t # Test configuration
 sudo systemctl restart nginx
 ```
+
 
 Lastly, we'll need to install crowsnest to handle webcam streaming,
 follow instructions in https://crowsnest.mainsail.xyz/setup/installation
