@@ -129,6 +129,10 @@ You can use `sudo raspi-config` to access frequently used settings. wifi etc
 6) Good starting point for klipper config https://klipper.discourse.group/t/delta-printer-w-btt-skr-pico-v1-0-board/18798
 install dependancies
 ```
+sudo apt update
+sudo apt install git
+```
+```
 sudo apt install python3-virtualenv python3-dev python3-dev libffi-dev build-essential libncurses-dev avrdude gcc-avr binutils-avr avr-libc stm32flash dfu-util libnewlib-arm-none-eabi gcc-arm-none-eabi binutils-arm-none-eabi libusb-1.0-0 libusb-1.0-0-dev
 ```
 
