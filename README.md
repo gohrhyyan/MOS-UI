@@ -133,14 +133,18 @@ install dependancies
 ```
 sudo apt update
 sudo apt install git
-
-sudo apt install python3-virtualenv python3-dev python3-dev libffi-dev build-essential libncurses-dev avrdude gcc-avr binutils-avr avr-libc stm32flash dfu-util libnewlib-arm-none-eabi gcc-arm-none-eabi binutils-arm-none-eabi libusb-1.0-0 libusb-1.0-0-dev
+sudo apt install gh
 ```
+
+log in to github and authenticate using:
+github.com, HTTPS, and a authentication token- provide the token with read-only access to this repo.
+`gh auth login`
 
 clone klipper
 ```
 cd ~
 git clone https://github.com/KevinOConnor/klipper
+sudo apt install python3-virtualenv python3-dev python3-dev libffi-dev build-essential libncurses-dev avrdude gcc-avr binutils-avr avr-libc stm32flash dfu-util libnewlib-arm-none-eabi gcc-arm-none-eabi binutils-arm-none-eabi libusb-1.0-0 libusb-1.0-0-dev
 ```
 
 initialize the python venv and install python dependancies
