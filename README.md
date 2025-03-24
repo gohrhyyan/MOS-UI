@@ -42,12 +42,13 @@ delete everthing under, and including these two headers
 these contain conflicting `dtoverlay` and `otg_mode` configurations that will cause SSH over USB to FAIL.
 
 2.
-`sudo nano /boot/firmware/cmdline.txt` and edit the file
-after `rootwait` add a space and add:
+`sudo nano /boot/firmware/cmdline.txt` and edit the file.
+
+after `rootwait` add a space and insert:
 ```modules-load=dwc2,g_ether g_ether.dev_addr=12:22:33:44:55:6 g_ether.host_addr=16:22:33:44:55:66```
-Replace the MAC addresses above as required.
+Replace the MAC addresses as required.
+Delete `console=serial0,115200` so that the file starts with `console=tty1`
 The contents of /boot/firmware/cmdline.txt must be one a single line.
-delete `console=serial0,115200` so that the file starts with `console=tty1`
 On next boot your OS will use the dwc2 driver in the correct mode to support operation as a USB 
 gadget.
 
