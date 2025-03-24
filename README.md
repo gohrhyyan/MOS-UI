@@ -120,19 +120,20 @@ enx162233445566: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
 You should now be able to use the command ssh to connect to the pi over USB
 
 # Pi environment setup
-You can use `sudo raspi-config` to access frequently used settings. wifi etc
-1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail, we'll do a custom instal for this.
-2) Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
+You can use `sudo raspi-config` to access frequently used settings. wifi etc.
+Some other handy resources:
+1) We're essentially following the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, with some key customisations.
+2) You can test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
 3) Helpful videos for installing Klipper: https://youtu.be/nI8o6yQRxpY?si=SBUc8BNKDtQh0sdx
    https://www.youtube.com/watch?v=yINdrywvaEU&t=679s
-5) Helpful video for configuring GPIO for Klipper on the RPI: https://www.youtube.com/watch?v=ZOL-motmkos
-6) Good starting point for klipper config https://klipper.discourse.group/t/delta-printer-w-btt-skr-pico-v1-0-board/18798
+4) Helpful video for configuring GPIO for Klipper on the RPI: https://www.youtube.com/watch?v=ZOL-motmkos
+5) Good starting point for klipper config https://klipper.discourse.group/t/delta-printer-w-btt-skr-pico-v1-0-board/18798
+
 install dependancies
 ```
 sudo apt update
 sudo apt install git
-```
-```
+
 sudo apt install python3-virtualenv python3-dev python3-dev libffi-dev build-essential libncurses-dev avrdude gcc-avr binutils-avr avr-libc stm32flash dfu-util libnewlib-arm-none-eabi gcc-arm-none-eabi binutils-arm-none-eabi libusb-1.0-0 libusb-1.0-0-dev
 ```
 
