@@ -139,6 +139,8 @@ sudo apt install gh
 log in to github and authenticate using:
 github.com, HTTPS, and a authentication token- provide the token with read-only access to this repo.
 `gh auth login`
+![image](https://github.com/user-attachments/assets/fd094db5-7385-4697-86a0-9c70bdbc96dd)
+
 
 clone klipper
 ```
