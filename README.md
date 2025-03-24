@@ -26,10 +26,13 @@ Install Raspberry PI OS 32bit lite on an SD card using the raspberry pi imager:
 
 # SSH into the Pi using the hostname raspberrypi.local
 1. 
-`sudo nano /boot/firmware/config.txt` and add this line to the end of the file
+`sudo nano /boot/firmware/config.txt` and add these lines to the end of the file
 ```
 [all]
 dtoverlay=dwc2,dr_mode=peripheral
+dtoverlay=pi3-miniuart-bt
+dtoverlay=disable-bt
+
 ```
 delete everthing under, and including these two headers
 ```
