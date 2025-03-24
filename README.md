@@ -575,6 +575,9 @@ sudo find /home/pi/ic-designstudy-groupproj -type f -exec chmod 644 {} \;
 sudo chown -R pi:www-data /home/pi/mainsail
 sudo find /home/pi/mainsail -type d -exec chmod 755 {} \;
 sudo find /home/pi/mainsail -type f -exec chmod 644 {} \;
+
+# Ensure parent directories have execute permission
+sudo chmod 755 /home/pi
 ```
 
 8) Enable the site
