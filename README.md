@@ -1,72 +1,76 @@
 ![image](https://github.com/user-attachments/assets/dd83a009-5853-41ed-8b8a-0183b442ee0d)
 
-# ic-designstudy-groupproj
+# ic-designstudy-groupproj DEPLOYMENT STEPS
 
-DEPLOYMENT STEPS
-Install Raspberry PI OS 32bit lite, ensure that username is "pi"
-1. Back up your `config.txt`:
-```
-sudo cp /boot/config.txt /boot/config.bak
-```
-2. Using your preferred text editor add the following to the end of /boot/config.txt
+# PI OS installation
+Install Bonjour Print Services for Windows: needed to resolve the .local host adress of the Raspberry Pi. The program can be downloaded from:
+ https://support.apple.com/en-us/106380
+Install MobaXTerm, or your preferred SSH client.
+ https://mobaxterm.mobatek.net/
+Install Raspberry PI OS 32bit lite on an SD card using the raspberry pi imager:
+ - https://www.raspberrypi.com/software/
+ - ensure that hostname is raspberrypi
+ - ensure that username is "pi", and that SSH is enabled.
+ - For the preliminary set-up, configure the OS to connect to a hotspot/local wifi, this will enable us to SSH into the Pi before USB SSH is configured.
+
+# SSH into the Pi using the hostname raspberrypi.local
+1. 
+`sudo nano /boot/firmware/config.txt` and add this line to the end of the file
 ```
 [all]
 dtoverlay=dwc2,dr_mode=peripheral
 ```
-delete everthing under, and including
+delete everthing under, and including these two headers
 ```
 [CM5]
-
 [CM4]
 ```
 these contain conflicting `dtoverlay` and `otg_mode` configurations that will cause SSH over USB to FAIL.
 
-Back up `/boot/cmdline.txt`
-sudo cp /boot/cmdline.txt /boot/cmdline.bak
-3. Using you preferred text editor add the following to the end of `/boot/cmdline.txt`, after 'rootwait' add a space and:
+2.
+`sudo nano /boot/cmdline.txt` and edit the file
+after `rootwait` add a space and add:
 ```modules-load=dwc2,g_ether g_ether.dev_addr=12:22:33:44:55:6 g_ether.host_addr=16:22:33:44:55:66```
 Replace the MAC addresses above as required.
 The contents of /boot/cmdline.txt must be one a single line.
 On next boot your OS will use the dwc2 driver in the correct mode to support operation as a USB 
 gadget.
 
+3.
 Use udev rules to enable the usb-ethernet connection when the cable is connected to a computer.
 ```bash
 sudo nano /etc/udev/rules.d/80-usb0-up.rules
 ```
-
 Add this line:
 ```
 ACTION=="add", SUBSYSTEM=="net", KERNEL=="usb0", RUN+="/sbin/ifconfig usb0 up"
 ```
-
 Reload udev rules:
 ```bash
 sudo udevadm control --reload-rules
 ```
-This udev solution is brings the interface up whenever it's detected, not just at boot time.
+This udev solution brings the USB interface up whenever it's detected, not just at boot time.
 
-on your host computer 
-#WINDOWS 10/11
+# On your host computer:
+Windows:
 Plug in the Pi and check device manager, you should see a new device that looks like this
 ![image](https://github.com/user-attachments/assets/1822bc8d-3cd3-4526-bbf3-036f8a1e7b1c)
 
-Install Bonjour
-The Bonjour Print Services for Windows are needed to resolve the .local host adress of the Raspberry Pi. The program can be downloaded from here.
-
-Install Windows RNDIS Driver
-This step is required, if your Pi only shows up as a COM Port in device manager. Follow this page for further instructions.
-https://github.com/dukelec/mbrush/tree/master/doc/win_driver
+Install Windows RNDIS Driver:
+This step is required, if your Pi only shows up as a COM Port in device manager. Driver and shortened instructions are included here for convenience.
+Credit and detailed help: https://github.com/dukelec/mbrush/tree/master/doc/win_driver
+![image](https://github.com/user-attachments/assets/48397843-d4da-45f0-aba6-2e0a60246fcd)
+Right click the USB Serial Device at COM port under the PORTS & LPT and select “Update Driver Software”.
+![image](https://github.com/user-attachments/assets/f690b545-ad89-47e0-8bf8-87f4cbbb9af0)
+Select ‘Browse my computer for driver software’.
+![image](https://github.com/user-attachments/assets/4db28088-5be7-44a5-a081-32b19e826edc)
+Choose the location where you extracted the driver files on your PC.
 
 Optional: share network
 You can share your network connection from the Windows Host to the Raspberry Pi by going to Control Panel\Network and Internet\Network Connections. First, you need to identify the Rasbperry Pi Network Adapter by searching for USB Ethernet/RNDIS Gadget and remember the name of the adapter (you can also change it). Next, right click on the network you want to share, go to properties and then sharing.
 ![image](https://github.com/user-attachments/assets/3ea4b962-870d-441b-8152-6e88689f6c18)
 
-Install MobaXTerm, you should be able to connect to the PI using SSH.
-https://mobaxterm.mobatek.net/
-
-
-#LINUX
+LINUX (currently work in progress)
 plug in the RPI
 to validate the USB connection:
 ```
@@ -115,14 +119,14 @@ enx162233445566: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
 ```
 You should now be able to use the command ssh to connect to the pi over USB
 
-#Pi environment setup
-use `sudo raspi-config` to access frequently used settings. wifi etc
+# Pi environment setup
+You can use `sudo raspi-config` to access frequently used settings. wifi etc
 1) Follow the steps outlined in https://docs.mainsail.xyz/setup/getting-started/manual-setup, install and set up Klipper, then Moonraker, but not Mainsail, we'll do a custom instal for this.
 2) Test the connection using http://localhost:7125/printer/status to ensure that Klipper and Moonraker are interfacing correctly.
 3) Helpful videos for installing Klipper: https://youtu.be/nI8o6yQRxpY?si=SBUc8BNKDtQh0sdx
    https://www.youtube.com/watch?v=yINdrywvaEU&t=679s
 5) Helpful video for configuring GPIO for Klipper on the RPI: https://www.youtube.com/watch?v=ZOL-motmkos
-6) Good starting point for klipper config https://klipper.discourse.group/t/delta-printer-w-btt-skr-pico-v1-0-board/18798?utm_source=chatgpt.com
+6) Good starting point for klipper config https://klipper.discourse.group/t/delta-printer-w-btt-skr-pico-v1-0-board/18798
 install dependancies
 ```
 sudo apt install python3-virtualenv python3-dev python3-dev libffi-dev build-essential libncurses-dev avrdude gcc-avr binutils-avr avr-libc stm32flash dfu-util libnewlib-arm-none-eabi gcc-arm-none-eabi binutils-arm-none-eabi libusb-1.0-0 libusb-1.0-0-dev
