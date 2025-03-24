@@ -1,4 +1,5 @@
-![image](https://github.com/user-attachments/assets/dd83a009-5853-41ed-8b8a-0183b442ee0d)
+![image](https://github.com/user-attachments/assets/8fa3f6f8-b824-4f0c-941e-23a31650ae38)
+
 
 # ic-designstudy-groupproj DEPLOYMENT STEPS
 # Flash klipper firmware to Mainboard.
