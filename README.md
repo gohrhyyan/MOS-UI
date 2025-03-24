@@ -345,7 +345,6 @@ wget -q -O mainsail.zip https://github.com/mainsail-crew/mainsail/releases/lates
 5) INSTALL NGINX
 ```
 cd ~
-sudo apt update
 sudo apt install nginx
 ```
 
