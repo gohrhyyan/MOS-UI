@@ -4,12 +4,11 @@ import { Play, Pause, Square } from 'lucide-react';
 import gif from '../../../assets/3dprinting.gif';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
-import StopDialog from '../common/StopDialog';
 
 // Component for showing the print preview with animation
 const PrintPreview = ({ gif, isPaused, filename }) => (
   <div className="mb-6">
-    <div className="w-full aspect-square bg-gray-100 rounded-lg mb-2">
+    <div className="w-full aspect-square rounded-lg mb-2">
       <img 
         src={gif}
         alt="Print Livestream" 
@@ -17,7 +16,7 @@ const PrintPreview = ({ gif, isPaused, filename }) => (
         style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
       />
     </div>
-    <div className="text-lg text-gray-800">{filename || 'Unknown File'}</div>
+    <div className="text-lg">{filename || 'Unknown File'}</div>
   </div>
 );
 
@@ -26,8 +25,8 @@ const ControlButtons = ({ isPaused, onPauseResume, onStop, isPending }) => (
   <div className="flex gap-4 mt-4">
     <button 
       onClick={onPauseResume}
-      className={`flex-1 bg-gray-200 rounded-lg py-3 flex items-center justify-center ${
-        isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300 active:bg-gray-400'
+      className={`flex-1 rounded-lg py-3 flex items-center justify-center ${
+        isPending ? 'opacity-50 cursor-not-allowed' : ''
       }`}
       disabled={isPending}
     >
@@ -35,8 +34,8 @@ const ControlButtons = ({ isPaused, onPauseResume, onStop, isPending }) => (
     </button>
     <button 
       onClick={onStop}
-      className={`flex-1 bg-red-400 text-white rounded-lg py-3 flex items-center justify-center ${
-        isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-500 active:bg-red-600'
+      className={`flex-1 bg-red-500 text-white rounded-lg py-3 flex items-center justify-center ${
+        isPending ? 'opacity-50 cursor-not-allowed' : 'active:bg-red-600'
       }`}
       disabled={isPending}
     >
@@ -48,14 +47,35 @@ const ControlButtons = ({ isPaused, onPauseResume, onStop, isPending }) => (
 // Component for the progress bar and remaining time
 const ProgressBar = ({ progress, remainingTime }) => (
   <div className="mt-6">
-    <div className="w-full bg-gray-200 rounded-full h-2">
+    <div style={{ backgroundColor: 'var(--button-background)' }} className="w-full rounded-full h-2">
       <div 
         className="bg-blue-500 rounded-full h-2 transition-all duration-300 ease-linear"
         style={{ width: `${progress}%` }}
       />
     </div>
-    <div className="text-right text-sm text-gray-500 mt-1">
+    <div className="text-right text-sm mt-1">
       {remainingTime} remaining
+    </div>
+  </div>
+);
+
+const StopDialog = ({ onCancel, onStop }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div style={{ backgroundColor: 'var(--background-color)' }} className="bg-background-color rounded-lg p-6 max-w-sm w-full">
+      <div className="flex gap-4">
+        <button
+          onClick={onCancel}
+          className="flex-1 py-2 rounded-lg"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onStop}
+          className="flex-1 py-2 bg-red-500 rounded-lg"
+        >
+          STOP PRINT
+        </button>
+      </div>
     </div>
   </div>
 );
