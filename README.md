@@ -232,6 +232,96 @@ Apply klipper configuration
 `sudo nano /printer_data/config/printer.cfg`
 PASTE
 ```
+# This file contains common pin mappings for the BIGTREETECH SKR Pico V1.0
+# To use this config, the firmware should be compiled for the RP2040 with
+# USB communication.
+
+# The "make flash" command does not work on the SKR Pico V1.0. Instead,
+# after running "make", copy the generated "out/klipper.uf2" file
+# to the mass storage device in RP2040 boot mode
+
+# See docs/Config_Reference.md for a description of parameters.
+
+[mcu]
+serial: /dev/ttyAMA0
+restart_method: command
+
+[virtual_sdcard]
+path: /home/pi/printer_data/gcodes
+on_error_gcode: CANCEL_PRINT
+
+[exclude_object]
+
+[endstop_phase]
+
+#[include adxl.cfg]
+[include mainsail.cfg]
+
+[printer]
+kinematics: delta
+max_velocity: 300
+max_accel: 6000
+max_z_velocity: 300
+delta_radius: 146.83
+print_radius: 80.0
+minimum_z_position: -5.0
+square_corner_velocity: 5.0
+
+[delta_calibrate]
+radius: 75
+speed: 20
+horizontal_move_z: 5
+
+[stepper_a]
+step_pin: gpio11
+dir_pin: gpio10
+enable_pin: !gpio12
+microsteps: 16
+rotation_distance: 32
+endstop_pin: ^gpio4
+position_endstop: 259.428422
+homing_speed: 5
+arm_length: 241.713985
+
+[tmc2209 stepper_a]
+uart_pin: gpio9
+tx_pin: gpio8
+uart_address: 0
+run_current: 0.650
+#stealthchop_threshold: 999999
+
+[stepper_b]
+step_pin: gpio6
+dir_pin: gpio5
+enable_pin: !gpio7
+microsteps: 16
+rotation_distance: 32
+endstop_pin: ^gpio3
+position_endstop: 258.604547
+homing_speed: 5
+
+[tmc2209 stepper_b]
+uart_pin: gpio9
+tx_pin: gpio8
+uart_address: 2
+run_current: 0.650
+#stealthchop_threshold: 999999
+
+[stepper_c]
+step_pin: gpio19
+dir_pin: gpio28
+enable_pin: !gpio2
+microsteps: 16
+rotation_distance: 32
+endstop_pin: ^gpio25
+position_endstop: 259.336938
+homing_speed: 5
+
+[tmc2209 stepper_c]
+uart_pin: gpio9
+tx_pin: gpio8
+uart_address: 1
+run_current: 0.650
 #stealthchop_threshold: 999999
 
 [extruder]
@@ -249,7 +339,7 @@ control: pid
 pid_Kp: 22.2
 pid_Ki: 1.08
 pid_Kd: 114
-min_temp: 0
+min_temp: -100
 max_temp: 300
 max_extrude_cross_section:2
 
@@ -264,7 +354,7 @@ run_current: 0.800
 initial_duration: .01
 gcode:
   BED_MESH_PROFILE LOAD=default
-
+  
 [bed_mesh]
 speed: 20
 horizontal_move_z: 5
@@ -298,6 +388,7 @@ unretract_speed: 40
 #[output_pin beeper]
 #pin: EXP1_1
 ```
+
 Apply mainsail configuration
 `sudo nano /printer_data/config/mainsail.cfg`
 PASTE
