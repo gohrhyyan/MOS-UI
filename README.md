@@ -1105,8 +1105,17 @@ set the API key.
 `nano ~/printer_data/config/moonraker.conf`
 replace `{TELEGRAM_BOT_TOKEN}` with the <CHATID:KEY> copied from BotFather
 
-
-
-
-Lastly, we'll need to install crowsnest to handle webcam streaming,
+10) we'll need to install crowsnest to handle webcam streaming,
 follow instructions in https://crowsnest.mainsail.xyz/setup/installation
+
+11) Securely expose the server to the internet using Cloudflare tunnels.
+install cloudflared.
+```
+curl -L https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/cloudflare-archive-keyring.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs) main" | sudo tee  /etc/apt/sources.list.d/cloudflared.list\
+sudo apt update
+sudo apt install cloudflared
+```
+
+`cloudflared tunnel login`, and click the link
+
