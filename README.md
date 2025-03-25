@@ -871,26 +871,6 @@ upstream apiserver {
     ip_hash;
     server 127.0.0.1:7125;
 }
-
-upstream mjpgstreamer1 {
-    ip_hash;
-    server 127.0.0.1:8080;
-}
-
-upstream mjpgstreamer2 {
-    ip_hash;
-    server 127.0.0.1:8081;
-}
-
-upstream mjpgstreamer3 {
-    ip_hash;
-    server 127.0.0.1:8082;
-}
-
-upstream mjpgstreamer4 {
-    ip_hash;
-    server 127.0.0.1:8083;
-}
 ```
 
 ```
@@ -931,6 +911,8 @@ server {
         root /home/pi/ic-designstudy-groupproj/web-ui/dist;
         try_files $uri $uri/ /index.html;
         allow all;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     # Proxy for Moonraker API calls
@@ -940,6 +922,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;  # Mask the client IP
         proxy_set_header X-Forwarded-For 127.0.0.1;  # Mask the X-Forwarded-For header
         proxy_set_header X-Forwarded-Proto $scheme;  # Keep the original protocol (HTTP or HTTPS)
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /printer {
@@ -948,6 +932,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;
         proxy_set_header X-Forwarded-For 127.0.0.1;
         proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /api {
@@ -956,6 +942,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;
         proxy_set_header X-Forwarded-For 127.0.0.1;
         proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /debug {
@@ -964,6 +952,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;
         proxy_set_header X-Forwarded-For 127.0.0.1;
         proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /websocket {
@@ -976,6 +966,8 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_read_timeout 86400;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /machine {
@@ -984,6 +976,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;
         proxy_set_header X-Forwarded-For 127.0.0.1;
         proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 }
 
@@ -998,6 +992,8 @@ server {
         root /home/pi/mainsail;
         index index.html;
         try_files $uri $uri/ /index.html;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
         }
 
     # Proxy for Moonraker API calls
@@ -1007,6 +1003,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;  # Mask the client IP
         proxy_set_header X-Forwarded-For 127.0.0.1;  # Mask the X-Forwarded-For header
         proxy_set_header X-Forwarded-Proto $scheme;  # Keep the original protocol (HTTP or HTTPS)
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /printer {
@@ -1015,6 +1013,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;
         proxy_set_header X-Forwarded-For 127.0.0.1;
         proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /api {
@@ -1023,6 +1023,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;
         proxy_set_header X-Forwarded-For 127.0.0.1;
         proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /debug {
@@ -1031,6 +1033,8 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;
         proxy_set_header X-Forwarded-For 127.0.0.1;
         proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /websocket {
@@ -1043,6 +1047,8 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_read_timeout 86400;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 
     location /machine {
@@ -1051,10 +1057,11 @@ server {
         proxy_set_header X-Real-IP 127.0.0.1;
         proxy_set_header X-Forwarded-For 127.0.0.1;
         proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
     }
 }
 ```
-
 
 ```
 sudo rm /etc/nginx/sites-enabled/default                           
@@ -1085,6 +1092,16 @@ sudo chmod 755 /home/pi
 ```
 
 8) Enable the site
+add printer user credentials
+```
+sudo sh -c "echo -n '{USERNAME}:' >> /etc/nginx/.htpasswd"
+sudo sh -c "openssl passwd -apr1 >> /etc/nginx/.htpasswd"
+```
+enter the password when prompted.
+to view registered users:
+`cat /etc/nginx/.htpasswd` note- passwords here are displayed as hashes, not plaintext
+
+
 ```
 sudo ln -s /etc/nginx/sites-available/printer /etc/nginx/sites-enabled/
 sudo nginx -t # Test configuration
