@@ -151,6 +151,7 @@ install dependancies
 sudo apt update
 sudo apt install git
 sudo apt install gh
+sudo apt install apprise
 ```
 
 log in to github and authenticate using:
@@ -776,7 +777,13 @@ subscriptions:
 refresh_interval: 168
 enable_auto_refresh: True
 
+[notifier telegram]
+url: tgram://{env:TELEGRAM_BOT_TOKEN}
+events: *
+body: {event_args[1].filename} {event_name}
+body_format: text
 ```
+
 Create the Moonraker startup service
 ```
 sudo nano /etc/systemd/system/moonraker.service
@@ -1084,7 +1091,6 @@ sudo ln -s /etc/nginx/sites-available/printer /etc/nginx/sites-enabled/
 sudo nginx -t # Test configuration
 sudo systemctl restart nginx
 ```
-
 
 Lastly, we'll need to install crowsnest to handle webcam streaming,
 follow instructions in https://crowsnest.mainsail.xyz/setup/installation
