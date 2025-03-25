@@ -1145,8 +1145,8 @@ Create a cloudflare tunnel for both websites:
 ```
 cloudflared tunnel create mobile
 cloudflared tunnel create pro
-cloudflared tunnel route dns MosUI mobile.mosprinting.xyz
-cloudflared tunnel route dns Mainsail pro.mosprinting.xyz
+cloudflared tunnel route dns mobile mobile.mosprinting.xyz
+cloudflared tunnel route dns pro pro.mosprinting.xyz
 ```
 To test the tunnels
 ```
