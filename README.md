@@ -1211,12 +1211,13 @@ WantedBy=multi-user.target
 Reload the systemd daemon to recognize the new service files:
 `sudo systemctl daemon-reload`
 enable both services to start at boot
-```sudo systemctl enable cloudflared-mobile.service
-sudo systemctl enable cloudflared-pro.service```
+```
+sudo systemctl enable cloudflared-mobile.service
+sudo systemctl enable cloudflared-pro.service
+```
 reboot and check their statuses using
 ```
 sudo systemctl status cloudflared-mobile.service
 sudo systemctl status cloudflared-pro.service
 ```
-
 
