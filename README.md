@@ -1,4 +1,5 @@
-![image](https://github.com/user-attachments/assets/8fa3f6f8-b824-4f0c-941e-23a31650ae38)
+![image](https://github.com/user-attachments/assets/820a9d45-54d7-4e9c-9b07-67555f5b1520)
+
 
 
 # ic-designstudy-groupproj DEPLOYMENT STEPS
