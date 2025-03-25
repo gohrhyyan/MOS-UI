@@ -1142,28 +1142,32 @@ sudo apt install cloudflared
 Authenticate Cloudflared:
 `cloudflared tunnel login`, and click the link
 Create a cloudflare tunnel for both websites:
-```cloudflared tunnel create MosUI
+```
+cloudflared tunnel create mobile
+cloudflared tunnel create pro
 cloudflared tunnel route dns MosUI mobile.mosprinting.xyz
-cloudflared tunnel route dns Moonraker pro.mosprinting.xyz
+cloudflared tunnel route dns Mainsail pro.mosprinting.xyz
 ```
 To test the tunnels
 ```
-cloudflared tunnel run --url localhost:80 MosUI
-cloudflared tunnel run --url localhost:8443 MosUI
+cloudflared tunnel run --url localhost:80 mobile
+cloudflared tunnel run --url localhost:8443 pro
 ```
 To enable the tunnels on startup, we need to create a service for cloudflare
-`sudo nano ~/.cloudflared/config.yml`
+`sudo nano ~/.cloudflared/mobile_config.yml`
 Configure the file like this, replacing the UUID with the cloudflare tunnel ID. (you can find this on the cloudflare console)
 ```
-tunnel: MosUI
+tunnel: mobile
 credentials-file: /home/pi/.cloudflared/[UUID].json
 
 ingress:
     - hostname: mobile.mosprinting.xyz
       service: http://localhost:80
     - service: http_status:404
-
-tunnel:  Moonraker
+```
+`sudo nano ~/.cloudflared/pro_config.yml`
+```
+tunnel:  Mainsail
 credentials-file: /home/pi/.cloudflared/[UUID].json
 
 ingress:
@@ -1171,8 +1175,48 @@ ingress:
       service: http://localhost:443
     - service: http_status:404
 ```
+Create systemd files for the tunnels
+`sudo nano /etc/systemd/system/cloudflared_mobile.service`
 ```
-sudo cloudflared --config ~/.cloudflared/config.yml service install
-sudo systemctl enable cloudflared
+[Unit]
+Description=Cloudflare Tunnel for MosUI
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+ExecStart=/usr/local/bin/cloudflared tunnel --config /home/pi/.cloudflared/mobile_config.yml run
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
 ```
+`sudo nano /etc/systemd/system/cloudflared_pro.service`
+```
+[Unit]
+Description=Cloudflare Tunnel for Mainsail
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+ExecStart=/usr/local/bin/cloudflared tunnel --config /home/pi/.cloudflared/pro_config.yml run
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+```
+Reload the systemd daemon to recognize the new service files:
+`sudo systemctl daemon-reload`
+enable both services to start at boot
+```sudo systemctl enable cloudflared-mobile.service
+sudo systemctl enable cloudflared-pro.service```
+reboot and check their statuses using
+```
+sudo systemctl status cloudflared-mobile.service
+sudo systemctl status cloudflared-pro.service
+```
+
 
