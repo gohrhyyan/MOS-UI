@@ -1126,13 +1126,52 @@ replace `{TELEGRAM_BOT_TOKEN}` with the <CHATID:KEY> copied from BotFather
 follow instructions in https://crowsnest.mainsail.xyz/setup/installation
 
 11) Securely expose the server to the internet using Cloudflare tunnels.
-install cloudflared.
+Purchase a domain on namecheap- most cost effective.
+Create a cloudflare account.
+https://www.cloudflare.com/en-gb/
+Transfer the nameserver to cloudflare
+https://www.namecheap.com/support/knowledgebase/article.aspx/9607/2210/how-to-set-up-dns-records-for-your-domain-in-a-cloudflare-account/
+install cloudflared:
 ```
 curl -L https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-archive-keyring.gpg >/dev/null
 echo "deb [signed-by=/usr/share/keyrings/cloudflare-archive-keyring.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs) main" | sudo tee  /etc/apt/sources.list.d/cloudflared.list\
 sudo apt update
 sudo apt install cloudflared
 ```
-
+Authenticate Cloudflared:
 `cloudflared tunnel login`, and click the link
+Create a cloudflare tunnel for both websites:
+```cloudflared tunnel create MosUI
+cloudflared tunnel route dns MosUI mobile.mosprinting.xyz
+cloudflared tunnel route dns Moonraker pro.mosprinting.xyz
+```
+To test the tunnels
+```
+cloudflared tunnel run --url localhost:80 MosUI
+cloudflared tunnel run --url localhost:8443 MosUI
+```
+To enable the tunnels on startup, we need to create a service for cloudflare
+`sudo nano ~/.cloudflared/config.yml`
+Configure the file like this, replacing the UUID with the cloudflare tunnel ID. (you can find this on the cloudflare console)
+```
+tunnel: MosUI
+credentials-file: /home/pi/.cloudflared/[UUID].json
+
+ingress:
+    - hostname: mobile.mosprinting.xyz
+      service: http://localhost:80
+    - service: http_status:404
+
+tunnel:  Moonraker
+credentials-file: /home/pi/.cloudflared/[UUID].json
+
+ingress:
+    - hostname: pro.mosprinting.xyz
+      service: http://localhost:443
+    - service: http_status:404
+```
+```
+sudo cloudflared --config ~/.cloudflared/config.yml service install
+sudo systemctl enable cloudflared
+```
 
