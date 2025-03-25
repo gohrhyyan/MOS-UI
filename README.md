@@ -151,7 +151,6 @@ install dependancies
 sudo apt update
 sudo apt install git
 sudo apt install gh
-sudo apt install apprise
 ```
 
 log in to github and authenticate using:
@@ -1091,6 +1090,23 @@ sudo ln -s /etc/nginx/sites-available/printer /etc/nginx/sites-enabled/
 sudo nginx -t # Test configuration
 sudo systemctl restart nginx
 ```
+
+9) Enabling Telegram Notifs:
+install Appraise notification manager
+`sudo apt install apprise`
+access https://telegram.me/BotFather, start a con
+versation and follow the steps to create a new bot.
+Note down the details in the message
+```
+Use this token to access the HTTP API:
+<CHATID:KEY>
+Keep your token secure and store it safely, it can be used by anyone to control your bot.
+```
+set the API key as environment variables
+replace <CHATID:KEY> with the chat id and key copied from BotFather
+`sudo sh -c 'echo "TELEGRAM_BOT_TOKEN=<CHATID:KEY>" >> /etc/environment'`
+
+
 
 Lastly, we'll need to install crowsnest to handle webcam streaming,
 follow instructions in https://crowsnest.mainsail.xyz/setup/installation
