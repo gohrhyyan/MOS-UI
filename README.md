@@ -777,7 +777,7 @@ refresh_interval: 168
 enable_auto_refresh: True
 
 [notifier telegram]
-url: tgram://{env:TELEGRAM_BOT_TOKEN}
+url: tgram://{TELEGRAM_BOT_TOKEN}
 events: *
 body: {event_args[1].filename} {event_name}
 body_format: text
@@ -1102,9 +1102,10 @@ Use this token to access the HTTP API:
 <CHATID:KEY>
 Keep your token secure and store it safely, it can be used by anyone to control your bot.
 ```
-set the API key as environment variables
-replace <CHATID:KEY> with the chat id and key copied from BotFather
-`sudo sh -c 'echo "TELEGRAM_BOT_TOKEN=<CHATID:KEY>" >> /etc/environment'`
+set the API key.
+`nano ~/printer_data/config/moonraker.conf`
+replace `{TELEGRAM_BOT_TOKEN}` with the chat id and key copied from BotFather
+
 
 
 
