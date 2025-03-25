@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Printer } from 'lucide-react';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
-import QualitySpeedSlider from '../common/QualitySpeedSlider';
 import { Clock } from 'lucide-react';
 import { formatTime } from '../../utils/timeUtils';
 
@@ -18,15 +17,6 @@ const getFilename = (path) => {
   if (!path) return 'Unknown file';
   return path;
 };
-
-/*
-// Helper function to calculate adjusted time based on quality setting
-const calculateAdjustedTime = (baseTimeMs, sliderValue) => {
-  // Default slider has 3 steps (0-4), with 2 being normal speed
-  const speedFactor = sliderValue < 2 ? 1 + (2 - sliderValue) * 0.25 : 1 / (1 + (sliderValue - 2) * 0.25);
-  return baseTimeMs * speedFactor;
-};
-*/
 
 // Default base time for calculation in milliseconds (30 minutes)
 const baseTimeMs = 30 * 60 * 1000;
@@ -160,11 +150,11 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
         onBack={() => setSelectedView("home")}
       />
       <div className="flex-1 flex flex-col p-4">
-        <div className="w-full aspect-square bg-gray-100 rounded-lg mb-2 relative">
+        <div className="w-full aspect-square rounded-lg mb-2 relative">
           {/* Show loading indicator if fetching thumbnail */}
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75 rounded-lg">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+            <div className="absolute inset-0 flex items-center justify-center bg-opacity-75 rounded-lg">
+              <div className="animate-spin h-8 w-8 border-4 bborder-t-transparent rounded-full"></div>
             </div>
           )}
           
@@ -176,9 +166,9 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
               className="w-full h-full object-cover rounded-lg"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center rounded-lg bg-gray-200">
+            <div className="w-full h-full flex flex-col items-center justify-center rounded-lg">
               <svg 
-                className="w-16 h-16 mb-2 text-gray-400" 
+                className="w-16 h-16 mb-2" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24" 
@@ -191,29 +181,21 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 ></path>
               </svg>
-              <p className="text-gray-500 text-center">No preview available</p>
+              <p className="text-center">No preview available</p>
             </div>
           )}
         </div>
         
-        <div className="text-lg mb-1 text-gray-800">
+        <div className="text-lg mb-1">
             {filename}
-            <div className="text-sm text-gray-500">
+            <div className="text-sm">
                 {formattedSize}
             </div>
         </div>
-        
-        {/*
-        <QualitySpeedSlider 
-          sliderValue={sliderValue}
-          setSliderValue={setSliderValue}
-          adjustedTime={adjustedTime}
-        />
-        */}
-
+      
         <div className="flex items-center justify-center mb-2 gap-2">
-          <Clock className="w-5 h-5 text-gray-600" />
-          <div className="text-2xl text-gray-800">
+          <Clock className="w-5 h-5" />
+          <div className="text-2xl font-medium">
             {formatTime(estimatedTime)}
           </div>
         </div>
@@ -222,14 +204,12 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
           onClick={handlePrint}
           disabled={isLoading}
           className={`
-            mt-auto w-full rounded-lg py-3 flex items-center justify-center gap-2 
-            ${isLoading ? 'bg-gray-300 text-gray-500' : 'bg-gray-200 text-gray-800 hover:bg-gray-300 active:bg-gray-400'}
-            transition-colors
+            mt-auto w-full rounded-lg py-3 flex items-center justify-center gap-2
           `}
         >
           {isLoading ? (
             <>
-              <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
+              <div className="animate-spin h-5 w-5 border-2 border-t-transparent rounded-full"></div>
               Preparing...
             </>
           ) : (

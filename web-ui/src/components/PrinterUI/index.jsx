@@ -59,7 +59,7 @@ const PrinterUI = () => {
     // In JavaScript, the && operator returns the second operand if the first is truthy.
     return (
         // Full-height flex container with white background and hidden horizontal overflow
-        <div className="h-screen flex flex-col bg-white overflow-x-hidden">
+        <div className="h-screen flex flex-col bg-inherit overflow-x-hidden">
             {/* Conditional rendering of views based on selectedView state */}
             {/* Only the selected view will be rendered */}
             

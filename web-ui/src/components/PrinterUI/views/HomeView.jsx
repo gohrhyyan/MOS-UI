@@ -4,8 +4,6 @@ import MOSLogo from '../../../assets/MOS.png';
 import PrinterImage from '../../../assets/Printer.png';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import useFileUpload from '../../hooks/useFileUpload';
-import { usePrinterState } from '../../hooks/usePrinterState';
-
 
 const HomeView = ({ 
   setSelectedView, 
@@ -116,17 +114,12 @@ const HomeView = ({
           <button 
             onClick={() => fileInputRef.current?.click()}
             className={`
-              flex flex-col items-center justify-center gap-2 
-              bg-gray-200 rounded-lg px-6 py-3 w-48 
-              text-gray-800 hover:bg-gray-300 active:bg-gray-400 
-              transition-colors
-              ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
-              ${isDragging ? 'bg-gray-300' : ''}
+              flex flex-col items-center justify-center gap-2 rounded-lg px-6 py-3 w-48
             `}
             disabled={isUploading}
           >
             <Upload className={`w-8 h-8 ${isUploading ? 'animate-pulse' : ''}`} />
-            <span className="text-sm text-gray-600">
+            <span className="text-sm font-medium">
               {isUploading ? 'uploading...' : 'upload design'}
             </span>
           </button>
@@ -140,14 +133,14 @@ const HomeView = ({
           />
 
           <div className="absolute right-0 flex flex-col gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200">
-              <Settings className="w-6 h-6 text-gray-600" />
+            <button className="p-2 rounded-full">
+              <Settings className="w-6 h-6" />
             </button>
             <button 
               onClick={() => setSelectedView('history')}
-              className="p-2 hover:bg-gray-100 rounded-full active:bg-gray-200"
+              className="p-2 rounded-full"
             >
-              <History className="w-6 h-6 text-gray-600" />
+              <History className="w-6 h-6" />
             </button>
           </div>
         </div>

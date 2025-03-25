@@ -18,17 +18,13 @@ const FileHistoryView = ({ setSelectedView, currentFiles, setSelectedFilePath })
   const FileItem = ({ file }) => (
     <button
       onClick={() => handleFileSelect(file)}
-      className="w-full flex items-center p-4 mb-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+      className="w-full flex items-center p-4 mb-2 rounded-lg transition-colors"
     >
-      <div className="bg-gray-200 p-3 rounded-lg mr-4">
-        <File className="w-6 h-6 text-gray-600" />
-      </div>
-      
-      <div className="flex-1 text-left">
-        <div className="font-medium text-gray-800 truncate">
+      <div className="flex-1 text-left overflow-hidden">
+        <div className="font-medium truncate max-w-full">
           {fileUtils.getFilename(file.path)}
         </div>
-        <div className="text-sm text-gray-500 flex items-center gap-4 mt-1">
+        <div className="text-sm flex items-center gap-4 mt-1">
           <span className="flex items-center gap-1">
             <Calendar className="w-4 h-4" />
             {fileUtils.formatDate(file.modified)}
@@ -44,7 +40,7 @@ const FileHistoryView = ({ setSelectedView, currentFiles, setSelectedFilePath })
 
   // Function to render empty state
   const EmptyState = () => (
-    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+    <div className="flex flex-col items-center justify-center h-full">
       <File className="w-12 h-12 mb-2" />
       <p>No print files found</p>
     </div>

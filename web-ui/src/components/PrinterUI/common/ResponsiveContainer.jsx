@@ -21,9 +21,9 @@ const ResponsiveContainer = ({ children, allowContentScroll = false }) => {
   }, []);
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col px-4 sm:px-6 bg-white relative h-[calc(var(--vh,1vh)*100)] overflow-hidden">
+    <div className="w-full max-w-md mx-auto flex flex-col px-4 sm:px-6 relative h-[calc(var(--vh,1vh)*100)] overflow-hidden">
       {/* We wrap the children in another div that can be scrollable or not based on the prop */}
-      <div className={`flex flex-col flex-1 ${allowContentScroll ? 'overflow-hidden' : 'overflow-hidden'}`}>
+      <div className={`flex flex-col flex-1 ${allowContentScroll ? 'overflow-auto' : 'overflow-hidden'}`}>
         {children}
       </div>
     </div>
