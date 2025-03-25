@@ -1093,9 +1093,8 @@ sudo systemctl restart nginx
 
 9) Enabling Telegram Notifs:
 install Appraise notification manager
-`sudo apt install apprise`
-access https://telegram.me/BotFather, start a con
-versation and follow the steps to create a new bot.
+```sudo apt install apprise```
+access https://telegram.me/BotFather, start a conversation and follow the steps to create a new bot.
 Note down the details in the message
 ```
 Use this token to access the HTTP API:
@@ -1104,7 +1103,7 @@ Keep your token secure and store it safely, it can be used by anyone to control 
 ```
 set the API key.
 `nano ~/printer_data/config/moonraker.conf`
-replace `{TELEGRAM_BOT_TOKEN}` with the chat id and key copied from BotFather
+replace `{TELEGRAM_BOT_TOKEN}` with the <CHATID:KEY> copied from BotFather
 
 
 
