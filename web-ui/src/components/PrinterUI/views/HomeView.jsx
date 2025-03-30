@@ -16,6 +16,8 @@ const HomeView = ({
 }) => {
 
   const [isDragging, setIsDragging] = useState(false);
+  const [showSliceModal, setShowSliceModal] = useState(false);
+  const [sliceFile, setSliceFile] = useState(null);
   const fileInputRef = useRef(null);
 
   // Fetch files on component mount
@@ -34,6 +36,56 @@ const HomeView = ({
     };
     fetchFiles();
   }, [socket]);
+
+  const handleSliceSuccess = (gcode) => {
+    // Convert the gcode to a file object
+    const gcodeFile = new File(
+      [gcode],
+      `${sliceFile.name.split('.')[0]}.gcode`,
+      { type: 'text/plain' }
+    );
+    // Upload the sliced gcode file
+    uploadFile(gcodeFile);
+    }
+
+  // File input handler
+  const handleFileInput = (e) => {
+    const file = e.target.files?.[0];
+    if (file && file.name.toLowerCase().endsWith('.gcode')) {
+        uploadFile(file);
+    }
+    else if (file.name.toLowerCase().endsWith('.stl') || file.name.toLowerCase().endsWith('.obj') || file.name.toLowerCase().endsWith('.3mf')) {
+        setSliceFile(file);
+        setShowSliceModal(true);
+        try {
+          // Use kiri:moto to slice the file
+          kiri.newEngine()
+                .setListener(console.log)
+                .load(file)
+                .then(eng => eng.setProcess({
+                    sliceShells: 1,
+                    sliceFillSparse: 0.25,
+                    sliceTopLayers: 2,
+                    sliceBottomLayers: 2
+                }))
+                .then(eng => eng.setDevice({
+                    gcodePre: [ "M82", "M104 S220" ],
+                    gcodePost: [ "M107" ]
+                }))
+                .then(eng => eng.slice())
+                .then(eng => eng.prepare())
+                .then(eng => eng.export())
+                .then(handleSliceSuccess)
+                .then(console.log);         
+          // Close the modal
+          setShowSliceModal(false);
+
+        } catch (error) {
+          console.error('Error slicing file:', error);
+          showToast('Error slicing file', 'error');
+        }
+    }
+  };
 
   // Handle successful file upload
   const handleFileUploadSuccess = useCallback((uploadedFilePath) => {
@@ -71,21 +123,12 @@ const HomeView = ({
     e.stopPropagation();
     setIsDragging(false);
     
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      uploadFile(file);
-    }
+    handleFileInput(e);
   };
 
-  // File input handler
-  const handleFileInput = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      uploadFile(file);
-    }
-  };
-
+  
   return (
+    <React.Fragment>
     <ResponsiveContainer>
       <div 
         className="flex flex-col items-center justify-between"
@@ -122,14 +165,13 @@ const HomeView = ({
             <span className="text-sm font-medium">
               {isUploading ? 'uploading...' : 'upload design'}
             </span>
-          </button>
+          </button>gcode
 
           <input 
             type="file" 
             ref={fileInputRef}
             onChange={handleFileInput}
             className="hidden"
-            accept=".gcode"
           />
 
           <div className="absolute right-0 flex flex-col gap-4">
@@ -146,6 +188,33 @@ const HomeView = ({
         </div>
       </div>
     </ResponsiveContainer>
+    {/* Slice Modal */}
+    {showSliceModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl">
+          <div className="p-6">
+            <h2 className="text-xl font-bold mb-2">Slice</h2>
+            <p className="text-gray-700 mb-4">{currentFile?.name}</p>
+            
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowSliceModal(false)}
+                className="px-4 py-2 rounded-lg text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSlice}
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white"
+              >
+                Slice
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </React.Fragment>
   );
 };
 
