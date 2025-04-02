@@ -15,10 +15,16 @@ const HomeView = ({
   socket 
 }) => {
 
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef(null);
+const [showSliceModal, setShowSliceModal] = useState(false);
+const [sliceFile, setSliceFile] = useState(null);
+const fileInputRef = useRef(null);
+const [sliceProgress, setSliceProgress] = useState(0);
+const [sliceStatus, setSliceStatus] = useState('');
 
-  // Fetch files on component mount
+  /*
+  File Handlers
+  */
+ //Fetch files on component mount
   useEffect(() => {
     if (!socket) return;
     const fetchFiles = async () => {
@@ -40,7 +46,7 @@ const HomeView = ({
     setSelectedFilePath(uploadedFilePath);
     setSelectedView('prepare');
   }, [setSelectedFilePath, setSelectedView]);
-
+  
   // Initialize file upload handler
   const { uploadFile, isUploading } = useFileUpload({
     currentFiles,
@@ -48,52 +54,100 @@ const HomeView = ({
     handleFileUploadSuccess
   });
 
-  // Drag and drop handlers
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragIn = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragOut = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      uploadFile(file);
-    }
-  };
+  const handleSlice = (file) => {
+    console.log('Kiri available?', typeof kiri !== 'undefined');
+      // Use kiri:moto to slice the file
+      kiri.newEngine()
+            .setListener(msg => { console.log(msg) 
+               // Get the first property from the message that has an update value
+      const operation = Object.keys(msg)[0];
+      if (operation && msg[operation] && msg[operation].update !== undefined) {
+        // Update progress directly from the value
+        setSliceProgress(msg[operation].update * 100);
+        
+        // Update status if available
+        if (msg[operation].updateStatus) {
+          setSliceStatus(msg[operation].updateStatus);
+        } else {
+          // Use the operation name as status
+          setSliceStatus(operation.charAt(0).toUpperCase() + operation.slice(1));
+        }
+      }
+            })
+            //replace with loading
+            .load(URL.createObjectURL(file))
+            .then(eng => {
+              console.log('File loaded successfully, setting process parameters');
+              return eng.setProcess({
+                sliceShells: 1,
+                sliceFillSparse: 0.25,
+                sliceTopLayers: 2,
+                sliceBottomLayers: 2
+              });
+            })
+            .then(eng => {return eng.setDevice({
+                gcodePre: ["M82", "M104 S220"],
+                gcodePost: ["M107"]
+              });})
+            .then(eng => {return eng.slice();})
+            .then(eng => {return eng.prepare();})
+            .then(eng => {return eng.export();})
+            .then(gcode => {
+              // Convert the gcode to a file object
+              const gcodeFile = new File(
+                [gcode],
+                `${file.name.split('.')[0]}.gcode`,
+                { type: 'text/plain' }
+              );
+              // Upload the sliced gcode file
+              setShowSliceModal(false);
+              uploadFile(gcodeFile);
+            })
+            .catch(error => {
+              console.error('Error in slicing workflow:', error);
+              showToast('Error: ' + error.message, 'error'); 
+            }); 
+  }
 
   // File input handler
   const handleFileInput = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      uploadFile(file);
+    //file is already sliced
+    if (file && file.name.toLowerCase().endsWith('.gcode')) {
+        uploadFile(file);
+    }
+    //file needs slicing
+    else if (file.name.toLowerCase().endsWith('.stl') || file.name.toLowerCase().endsWith('.obj') || file.name.toLowerCase().endsWith('.3mf')) {
+      setSliceFile(file);
+      setShowSliceModal(true);
     }
   };
 
+
+// Simple SliceProgressBar component
+const SliceProgressBar = ({ progress, status }) => (
+<div className="mt-6">
+  <div className="flex justify-between mb-1">
+    <span className="text-sm">{status}</span>
+    <span className="text-sm font-medium">{Math.round(progress)}%</span>
+  </div>
+  <div style={{ backgroundColor: 'var(--button-background)' }} className="w-full rounded-full h-2">
+    <div 
+      className="bg-blue-500 rounded-full h-2 transition-all duration-300 ease-linear"
+      style={{ width: `${progress}%` }}
+    />
+  </div>
+</div>
+)
+
+  /*
+  HTML
+  */
   return (
+    <React.Fragment>
     <ResponsiveContainer>
       <div 
-        className="flex flex-col items-center justify-between"
-        onDragEnter={handleDragIn}
-        onDragLeave={handleDragOut}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
+        className={`flex flex-col items-center justify-between`}>
         <div className="w-full flex justify-center mb-4">
           <img 
             src={MOSLogo}
@@ -129,7 +183,6 @@ const HomeView = ({
             ref={fileInputRef}
             onChange={handleFileInput}
             className="hidden"
-            accept=".gcode"
           />
 
           <div className="absolute right-0 flex flex-col gap-4">
@@ -146,6 +199,45 @@ const HomeView = ({
         </div>
       </div>
     </ResponsiveContainer>
+
+    
+    {/* Slice Modal */}
+    {showSliceModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl" style={{ backgroundColor: 'var(--background-color)', color: 'var(--text-color)' }}>
+          <div className="p-6">
+            <h2 className="text-xl font-bold mb-2">{sliceFile?.name}</h2>            
+            {/* Simple Progress Bar */}
+            {sliceProgress > 0 && (
+              <SliceProgressBar 
+                progress={sliceProgress} 
+                status={sliceStatus}
+              />
+            )}
+            
+            <div className="flex justify-end gap-4 mt-6">
+              <button
+                onClick={() => setShowSliceModal(false)}
+                className="px-4 py-2 rounded-lg"
+                style={{ backgroundColor: 'red' }}
+                disabled={sliceProgress > 0 && sliceProgress < 100}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleSlice(sliceFile)}
+                className="px-4 py-2 rounded-lg"
+                style={{ backgroundColor: 'var(--button-background)' }}
+                disabled={sliceProgress > 0 && sliceProgress < 100}
+              >
+                Slice
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </React.Fragment>
   );
 };
 
