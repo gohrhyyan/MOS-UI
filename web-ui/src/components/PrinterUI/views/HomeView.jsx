@@ -37,17 +37,6 @@ const HomeView = ({
     fetchFiles();
   }, [socket]);
 
-  const handleSliceSuccess = (gcode) => {
-    // Convert the gcode to a file object
-    const gcodeFile = new File(
-      [gcode],
-      `${sliceFile.name.split('.')[0]}.gcode`,
-      { type: 'text/plain' }
-    );
-    // Upload the sliced gcode file
-    uploadFile(gcodeFile);
-    }
-
   // File input handler
   const handleFileInput = (e) => {
     const file = e.target.files?.[0];
@@ -58,9 +47,10 @@ const HomeView = ({
         setSliceFile(file);
         setShowSliceModal(true);
         console.log('Kiri available?', typeof kiri !== 'undefined');
+        
           // Use kiri:moto to slice the file
-          kiri.newEngine({debug: true})
-                .setListener(console.log)
+          kiri.newEngine()
+                .setListener(msg => console.log('Worker says:', msg))
                 .load(URL.createObjectURL(file))
                 .then(eng => {
                   console.log('File loaded successfully, setting process parameters');
@@ -92,7 +82,14 @@ const HomeView = ({
                 })
                 .then(gcode => {
                   console.log('GCODE exported successfully, length:', gcode.length);
-                  handleSliceSuccess(gcode);
+                  // Convert the gcode to a file object
+                  const gcodeFile = new File(
+                    [gcode],
+                    `${file.name.split('.')[0]}.gcode`,
+                    { type: 'text/plain' }
+                  );
+                  // Upload the sliced gcode file
+                  uploadFile(gcodeFile);
                 })
                 .then(console.log)
                 .catch(error => {
@@ -101,7 +98,7 @@ const HomeView = ({
                   setShowSliceModal(false);  
                 }); 
           // Close the modal
-          // setShowSliceModal(false);
+          setShowSliceModal(false);
     }
   };
 
