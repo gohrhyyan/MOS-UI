@@ -2,29 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script src="https://grid.space/code/engine.js"></script>
-    <script>
-      function test() {
-        kiri.newEngine()
-          .setListener(console.log)
-          .load("https://grid.space/obj/cube.stl")
-          .then(eng => eng.setProcess({ sliceShells: 1, sliceFillSparse: 0.25, sliceTopLayers: 2, sliceBottomLayers: 2 }))
-          .then(eng => eng.setDevice({ gcodePre: ["M82", "M104 S220"], gcodePost: ["M107"] }))
-          .then(eng => eng.slice())
-          .then(eng => eng.prepare())
-          .then(eng => eng.export())
-          .then(console.log)
-          .catch(console.error);
-      }
-      window.onload = test;
-    </script>
+    <script src="/code/engine.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>MOS Printing</title>
-    <script type="module" crossorigin src="/assets/index-C4t--lDq.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CgibY2hW.css">
+    <script type="module" crossorigin src="/assets/index-C4yQa5kO.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D5DWKHr7.css">
   </head>
   <body>
     <div id="root"></div>

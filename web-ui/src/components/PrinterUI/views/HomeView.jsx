@@ -15,14 +15,11 @@ const HomeView = ({
   socket 
 }) => {
 
-const [isDragging, setIsDragging] = useState(false);
 const [showSliceModal, setShowSliceModal] = useState(false);
 const [sliceFile, setSliceFile] = useState(null);
 const fileInputRef = useRef(null);
 const [sliceProgress, setSliceProgress] = useState(0);
 const [sliceStatus, setSliceStatus] = useState('');
-
-
 
   /*
   File Handlers
@@ -88,27 +85,14 @@ const [sliceStatus, setSliceStatus] = useState('');
                 sliceBottomLayers: 2
               });
             })
-            .then(eng => {
-              console.log('Process parameters set, configuring device');
-              return eng.setDevice({
+            .then(eng => {return eng.setDevice({
                 gcodePre: ["M82", "M104 S220"],
                 gcodePost: ["M107"]
-              });
-            })
-            .then(eng => {
-              console.log('Device configured, starting slice operation');
-              return eng.slice();
-            })
-            .then(eng => {
-              console.log('Slice completed, preparing output');
-              return eng.prepare();
-            })
-            .then(eng => {
-              console.log('Preparation complete, exporting GCODE');
-              return eng.export();
-            })
+              });})
+            .then(eng => {return eng.slice();})
+            .then(eng => {return eng.prepare();})
+            .then(eng => {return eng.export();})
             .then(gcode => {
-              console.log('GCODE exported successfully, length:', gcode.length);
               // Convert the gcode to a file object
               const gcodeFile = new File(
                 [gcode],
@@ -140,35 +124,6 @@ const [sliceStatus, setSliceStatus] = useState('');
   };
 
 
-  /*
-  Drag and drop handlers
-  */
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragIn = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragOut = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    
-    handleFileInput(e);
-  };
-
-
 // Simple SliceProgressBar component
 const SliceProgressBar = ({ progress, status }) => (
 <div className="mt-6">
@@ -192,12 +147,7 @@ const SliceProgressBar = ({ progress, status }) => (
     <React.Fragment>
     <ResponsiveContainer>
       <div 
-        className="flex flex-col items-center justify-between"
-        onDragEnter={handleDragIn}
-        onDragLeave={handleDragOut}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
+        className={`flex flex-col items-center justify-between`}>
         <div className="w-full flex justify-center mb-4">
           <img 
             src={MOSLogo}
@@ -254,11 +204,9 @@ const SliceProgressBar = ({ progress, status }) => (
     {/* Slice Modal */}
     {showSliceModal && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl">
+        <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl" style={{ backgroundColor: 'var(--background-color)', color: 'var(--text-color)' }}>
           <div className="p-6">
-            <h2 className="text-xl font-bold mb-2">Slice</h2>
-            <p className="text-gray-700 mb-4">{sliceFile?.name}</p>
-            
+            <h2 className="text-xl font-bold mb-2">{sliceFile?.name}</h2>            
             {/* Simple Progress Bar */}
             {sliceProgress > 0 && (
               <SliceProgressBar 
@@ -270,20 +218,19 @@ const SliceProgressBar = ({ progress, status }) => (
             <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={() => setShowSliceModal(false)}
-                className="px-4 py-2 bg-red-500 rounded-lg text-white"
+                className="px-4 py-2 rounded-lg"
+                style={{ backgroundColor: 'red' }}
                 disabled={sliceProgress > 0 && sliceProgress < 100}
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleSlice(sliceFile)}
-                className="px-4 py-2 rounded-lg bg-blue-500 text-white"
+                className="px-4 py-2 rounded-lg"
+                style={{ backgroundColor: 'var(--button-background)' }}
                 disabled={sliceProgress > 0 && sliceProgress < 100}
               >
-                {sliceProgress > 0 ? 
-                  (sliceProgress < 100 ? 'Slicing...' : 'Done') : 
-                  'Slice'
-                }
+                Slice
               </button>
             </div>
           </div>

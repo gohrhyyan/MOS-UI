@@ -24,32 +24,20 @@ const baseTimeMs = 30 * 60 * 1000;
 
 const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, showToast, refreshState }) => {
   // State for the component
-  const [thumbnail, setThumbnail] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [estimatedTime, setEstimatedTime] = useState(baseTimeMs);
   const [formattedSize, setFormattedSize] = useState(null);
-  const [viewMode, setViewMode] = useState('thumbnail'); 
   const [gcodeText, setGcodeText] = useState(null);
-  const [viewerInitialized, setViewerInitialized] = useState(false); // Track if viewer is initialized
   const gCodeContainerRef = useRef(null);
   const viewerRef = useRef(null);
 
   // Computed values
   const filename = getFilename(selectedFilePath);
 
-  // Fetch thumbnail and metadata when the component mounts
+  // Fetch gcode and metadata when the component mounts
   useEffect(() => {
     const fetchFileDetails = async () => {
-      try {
-        // Show loading state while fetching
-        setIsLoading(true);
-        
-        if (!filename) {
-          console.warn('No file details available');
-          setIsLoading(false);
-          return;
-        }
-        
+      try {        
         // Get file metadata to get estimated time
         try {
           const metadata = await sendMessage("server.files.metadata", {
@@ -71,15 +59,9 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
           }
         } catch (error) {
           console.error('Error fetching metadata:', error);
-          // Continue anyway to try getting thumbnails
+          // Continue anyway to try getting gcode
         }
         
-        // Make WebSocket request to get file thumbnails
-        const response = await sendMessage("server.files.thumbnails", {
-          "filename": filename
-        });
-        console.log('Thumbnail response:', response);
-
         const gcode = await fetch(`/server/files/gcodes/${filename}`, {
             method: 'GET',
         });
@@ -89,78 +71,41 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
         setGcodeText(gcodeTextResponse)
         // Now process the text content
         
-        // Check if we have thumbnails in the response
-        if (response && Array.isArray(response) && response.length > 0) {
-          // Sort thumbnails by size (width × height) in descending order to get highest resolution first
-          const sortedThumbnails = [...response].sort((a, b) => {
-            const aSize = (a.width || 0) * (a.height || 0);
-            const bSize = (b.width || 0) * (b.height || 0);
-            return bSize - aSize; // Descending order
-          });
-          
-          // Choose the highest resolution thumbnail (first one after sorting)
-          const selectedThumbnail = sortedThumbnails[0];
-          
-          if (selectedThumbnail && selectedThumbnail.thumbnail_path) {
-            // Construct the URL for the thumbnail
-            const thumbnailUrl = `/server/files/gcodes/${selectedThumbnail.thumbnail_path}`;
-            
-            // Set the thumbnail URL
-            setThumbnail(thumbnailUrl);
-            console.log('Using thumbnail path:', thumbnailUrl);
-          } else {
-            console.log('No valid thumbnail path found');
-            setThumbnail(null);
-          }
-        } else {
-          // No thumbnails found, set to null to use placeholder
-          console.log('No thumbnails found in response');
-          setThumbnail(null);
-        }
       } catch (error) {
         console.error('Error fetching file details:', error);
-        setThumbnail(null);
-      } finally {
-        setIsLoading(false);
       }
     };
-
     // Only fetch if we have valid fileUploadDetails
     if (filename) {
       fetchFileDetails();
     }
   }, [filename, sendMessage]);
-  
+
+  /*
+  GCode Renderer
+  */
   useEffect(() => {
     // Only initialize if we have the container, gcode text, and haven't initialized yet
-    if (gCodeContainerRef.current && gcodeText && !viewerInitialized) {
-      
+    if (gCodeContainerRef.current && gcodeText) {
       const container = gCodeContainerRef.current;
-      // Initially hide the container if not in gcode view
-      container.style.display = viewMode === 'gcode' ? 'block' : 'none';
       const canvas = document.createElement('canvas');
-     // const rect = container.getBoundingClientRect();
-     // canvas.style.width = `${rect.width}px`;  // CSS size
-     // canvas.style.height = `${rect.height}px`;
       canvas.className = 'w-full h-full';
       container.appendChild(canvas);
-      
-      // Initialize the viewer with the canvas
+
+      // Initialize the viewer in the canvas
       const viewer = new GCodeViewer(canvas);
       viewerRef.current = viewer;
-  
       const initViewer = async () => {
         try {
-          setIsLoading(true);
-          
           // Wait for initialization
           await viewer.init();
-          
+          viewer.gcodeProcessor.asyncMode = true;
           // Register progress callback
+          /*
           viewer.gcodeProcessor.loadingProgressCallback = (progress) => {
             console.log(`Loading: ${Math.ceil(progress * 100)}%`);
           };
-          
+          */
           // Configure viewer
           viewer.updateRenderQuality(4);
           viewer.setBackgroundColor('#0F0F0F');
@@ -180,24 +125,15 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
           viewer.gcodeProcessor.setColorMode(0);
           await viewer.processFile(gcodeText);
           viewer.gcodeProcessor.updateFilePosition(viewer.fileSize);
-          
-          // Mark as initialized
-          setViewerInitialized(true);
-          setIsLoading(false);
         } catch (error) {
           console.error('Error initializing GCode viewer:', error);
+        } finally {
           setIsLoading(false);
         }
       };
-      initViewer();
-    }
-    
-    // Toggle visibility based on view mode if viewer is initialized
-    if (gCodeContainerRef.current && viewerInitialized) {
-      gCodeContainerRef.current.style.display = viewMode === 'gcode' ? 'block' : 'none';
-    }
-    
-  }, [viewMode, gcodeText, viewerInitialized]);
+      setTimeout(() => initViewer(), 0);
+    } 
+  }, [gcodeText]);
   
   // Cleanup when component unmounts
   useEffect(() => {
@@ -214,6 +150,10 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
     };
   }, []);
 
+
+  /*
+  print start logic
+  */
   // Handler for starting the print
   const handlePrint = async () => {
     try {
@@ -237,108 +177,62 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
     }
   };
 
+  /*
+  HTML
+  */
   return (
-    <ResponsiveContainer>
-      <TopBar 
-        title="Preview" 
-        showBack={true} 
-        onBack={() => setSelectedView("home")}
-      />
-      <div className="flex-1 flex flex-col p-4">
-        <div className="w-full aspect-square rounded-lg mb-2 relative">
-          {/* Show loading indicator if fetching thumbnail */}
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-opacity-75 rounded-lg">
-              <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full"></div>
-            </div>
-          )}
-          
-          {/* Always render both, but show/hide based on viewMode */}
-          {/* Thumbnail view */}
-          {viewMode === 'thumbnail' && (
-            thumbnail ? (
-              <img 
-                src={thumbnail}
-                alt={`Preview of ${filename}`} 
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center rounded-lg">
-                <svg 
-                  className="w-16 h-16 mb-2" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24" 
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth="2" 
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  ></path>
-                </svg>
-                <p className="text-center">No thumbnail available</p>
-              </div>
-            )
-          )}
-          
-          {/* GCode viewer container - always present but visibility toggled by CSS */}
-          <div 
-            className="w-full h-full rounded-lg absolute overflow-hidden" 
-            ref={gCodeContainerRef} 
-          />
-        </div>
-      
-        <div className="text-lg mb-1">
-          {filename}
-          <div className="text-sm">
-            {formattedSize}
+  <ResponsiveContainer>
+    <TopBar 
+      title="Preview" 
+      showBack={true} 
+      onBack={() => setSelectedView("home")}
+    />
+    <div className="flex flex-col p-4 h-full">
+      <div className="w-full aspect-square rounded-lg mb-2 relative">
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-opacity-75 rounded-lg">
+            <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full"></div>
           </div>
-        </div>
-      
-        <div className="flex items-center justify-center mb-2 gap-2">
-          <Clock className="w-5 h-5" />
-          <div className="text-2xl font-medium">
-            {formatTime(estimatedTime)}
-          </div>
-        </div>
-        
-        <div className="flex justify-center mb-4">
-          <button
-            onClick={() => setViewMode(viewMode === 'thumbnail' ? 'gcode' : 'thumbnail')}
-            className="px-4 py-1 rounded-md text-sm font-medium"
-          >
-            {viewMode === 'thumbnail' ? 'Show GCode View' : 'Show Thumbnail'}
-          </button>
-        </div>
-        
-        <button 
-          onClick={handlePrint}
-          disabled={isLoading}
-          className={`
-            mt-auto w-full rounded-lg py-3 flex items-center justify-center gap-2
-          `}
-        >
-          {isLoading ? (
-            <>
-              <div className="animate-spin h-5 w-5 border-2 border-t-transparent rounded-full"></div>
-              Preparing...
-            </>
-          ) : (
-            <>
-              <Printer className="w-5 h-5" />
-              Print
-            </>
-          )}
-        </button>
+        )}
+        <div 
+          className="w-full h-full rounded-lg absolute overflow-hidden" 
+          ref={gCodeContainerRef} 
+        />
       </div>
-    </ResponsiveContainer>
+      <div className="text-lg mb-1">
+        {filename}
+        <div className="text-sm">
+          {formattedSize}
+        </div>
+      </div>
+      <div className="flex items-center justify-center mb-2 gap-2">
+        <Clock className="w-5 h-5" />
+        <div className="text-2xl font-medium">
+          {formatTime(estimatedTime)}
+        </div>
+      </div>
+      <button 
+        onClick={handlePrint}
+        disabled={isLoading}
+        className="mt-auto w-full rounded-lg py-3 flex items-center justify-center gap-2"
+      >
+        {isLoading ? (
+          <>
+            <div className="animate-spin h-5 w-5 border-2 border-t-transparent rounded-full"></div>
+            Preparing...
+          </>
+        ) : (
+          <>
+            <Printer className="w-5 h-5" />
+            Print
+          </>
+        )}
+      </button>
+    </div>
+</ResponsiveContainer>
   );
 };
 export default PreparePrintView;
-
-
 
 // Example Configuration for GCodeViewer
 /*
