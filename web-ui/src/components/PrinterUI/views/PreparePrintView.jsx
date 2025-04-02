@@ -136,13 +136,12 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
     if (gCodeContainerRef.current && gcodeText && !viewerInitialized) {
       
       const container = gCodeContainerRef.current;
-      
       // Initially hide the container if not in gcode view
       container.style.display = viewMode === 'gcode' ? 'block' : 'none';
-      
       const canvas = document.createElement('canvas');
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
+     // const rect = container.getBoundingClientRect();
+     // canvas.style.width = `${rect.width}px`;  // CSS size
+     // canvas.style.height = `${rect.height}px`;
       canvas.className = 'w-full h-full';
       container.appendChild(canvas);
       
@@ -286,7 +285,7 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
           
           {/* GCode viewer container - always present but visibility toggled by CSS */}
           <div 
-            className="w-full h-full rounded-lg overflow-hidden" 
+            className="w-full h-full rounded-lg absolute overflow-hidden" 
             ref={gCodeContainerRef} 
           />
         </div>
