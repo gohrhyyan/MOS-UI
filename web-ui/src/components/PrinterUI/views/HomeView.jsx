@@ -57,33 +57,51 @@ const HomeView = ({
     else if (file.name.toLowerCase().endsWith('.stl') || file.name.toLowerCase().endsWith('.obj') || file.name.toLowerCase().endsWith('.3mf')) {
         setSliceFile(file);
         setShowSliceModal(true);
-        try {
+        console.log('Kiri available?', typeof kiri !== 'undefined');
           // Use kiri:moto to slice the file
-          kiri.newEngine()
+          kiri.newEngine({debug: true})
                 .setListener(console.log)
-                .load(file)
-                .then(eng => eng.setProcess({
+                .load(URL.createObjectURL(file))
+                .then(eng => {
+                  console.log('File loaded successfully, setting process parameters');
+                  return eng.setProcess({
                     sliceShells: 1,
                     sliceFillSparse: 0.25,
                     sliceTopLayers: 2,
                     sliceBottomLayers: 2
-                }))
-                .then(eng => eng.setDevice({
-                    gcodePre: [ "M82", "M104 S220" ],
-                    gcodePost: [ "M107" ]
-                }))
-                .then(eng => eng.slice())
-                .then(eng => eng.prepare())
-                .then(eng => eng.export())
-                .then(handleSliceSuccess)
-                .then(console.log);         
+                  });
+                })
+                .then(eng => {
+                  console.log('Process parameters set, configuring device');
+                  return eng.setDevice({
+                    gcodePre: ["M82", "M104 S220"],
+                    gcodePost: ["M107"]
+                  });
+                })
+                .then(eng => {
+                  console.log('Device configured, starting slice operation');
+                  return eng.slice();
+                })
+                .then(eng => {
+                  console.log('Slice completed, preparing output');
+                  return eng.prepare();
+                })
+                .then(eng => {
+                  console.log('Preparation complete, exporting GCODE');
+                  return eng.export();
+                })
+                .then(gcode => {
+                  console.log('GCODE exported successfully, length:', gcode.length);
+                  handleSliceSuccess(gcode);
+                })
+                .then(console.log)
+                .catch(error => {
+                  console.error('Error in slicing workflow:', error);
+                  showToast('Error: ' + error.message, 'error');
+                  setShowSliceModal(false);  
+                }); 
           // Close the modal
-          setShowSliceModal(false);
-
-        } catch (error) {
-          console.error('Error slicing file:', error);
-          showToast('Error slicing file', 'error');
-        }
+          // setShowSliceModal(false);
     }
   };
 
@@ -165,7 +183,7 @@ const HomeView = ({
             <span className="text-sm font-medium">
               {isUploading ? 'uploading...' : 'upload design'}
             </span>
-          </button>gcode
+          </button>
 
           <input 
             type="file" 
@@ -194,7 +212,7 @@ const HomeView = ({
         <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl">
           <div className="p-6">
             <h2 className="text-xl font-bold mb-2">Slice</h2>
-            <p className="text-gray-700 mb-4">{currentFile?.name}</p>
+            <p className="text-gray-700 mb-4">{sliceFile?.name}</p>
             
             <div className="flex justify-end gap-4">
               <button
@@ -204,7 +222,6 @@ const HomeView = ({
                 Cancel
               </button>
               <button
-                onClick={handleSlice}
                 className="px-4 py-2 rounded-lg bg-blue-500 text-white"
               >
                 Slice
