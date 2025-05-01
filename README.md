@@ -231,6 +231,28 @@ KLIPPER_ARGS="/home/pi/klipper/klippy/klippy.py /home/pi/printer_data/config/pri
 Save the file with CTRL+O and close the editor with CTRL+X.
 
 Apply klipper configuration
+Objective: connect actuonix linear actuator to BTT Pico running Klipper,
+Be able to control forward and reverse, set limits, power up and down the actuator, and read limits through the Moonraker API.
+Method:
+1) Reassign Hotend 24V GPIO23 to provide 24v out for Linear Actutator.
+2) Step 24v down to 12v efficiently via buck converter
+3) Reassign 5v GPIO 24 and GPIO16 to the forward and reverse commands. 10,01 and 00 for off
+4) Reassign the Bed Therrmistor ADC input GPIO26 to provide constant 3.3v output (reference voltage)
+5) Reassign the Hotend Termistor ADC input GPIO27 to read the Potentiometer wiper   
+6) Close the circuit by connecting the potentiometer to ground on one of the thermstor inputs
+7) Translate the resistance reading to an Actuator extension % using resistance -> temperature map in the Klipper config. number will be reported in degrees celcius from 0-100. actually, it's a map to reporting the extension 0% to 100%. 
+8) We can set the limits of the plunger's motion by setting the min_temp and max_temp in the config file. This will be done by pulling the file, looking for min_temp and max_temp using a regex, editing the values as a string and reuploading the file. By querying the config file via moonraker, we then know the limits of the syringe in terms of % extension.
+9) By writing the syringe capacity to a new file, and knowing the relative positions of the syringe plunger to a new file queryable by moonraker, we'll then know how much extrusion liquid, in ml, there is left in the syringe.
+
+L16 Spec: Option P
+24v PSU, 12v Buck converter
+RP2040:
+
+ADC Inputs:
+GPIO29/ADC3 - USED FOR Steppers
+GPIO28/ADC2 - Servos (available)
+GPIO27/ADC1 -THB Heat Bed Thermistor (available)
+GPIO26/ADC0 -TH0 Hotend Thermistor (available)
 `sudo nano /printer_data/config/printer.cfg`
 PASTE
 ```
@@ -256,7 +278,6 @@ on_error_gcode: CANCEL_PRINT
 
 [endstop_phase]
 
-#[include adxl.cfg]
 [include mainsail.cfg]
 
 [printer]
@@ -334,13 +355,15 @@ microsteps: 16
 rotation_distance: 33.500
 nozzle_diameter: 0.4
 filament_diameter: 1.75
-heater_pin: gpio23
-sensor_type: EPCOS 100K B57560G104F
-sensor_pin: gpio27
-control: pid
-pid_Kp: 22.2
-pid_Ki: 1.08
-pid_Kd: 114
+heater_pin: none 
+#gpio18
+#sensor_type: EPCOS 100K B57560G104F
+sensor_pin: none 
+#gpio20
+#control: pid
+#pid_Kp: 22.2
+#pid_Ki: 1.08
+#pid_Kd: 114
 min_temp: -100
 max_temp: 300
 max_extrude_cross_section:2
@@ -351,6 +374,50 @@ tx_pin: gpio8
 uart_address: 3
 run_current: 0.800
 #stealthchop_threshold: 999999
+
+
+#LINEAR ACTUATOR CONFIG
+[output_pin LINEAR_PWR]
+pin: gpio23
+value: 0
+shutdown_value: 0
+# gcode command: SET_PIN PIN=LINEAR_PWR VALUE=1
+
+[output_pin LINEAR_FWD]
+pin: gpio24
+value: 0
+shutdown_value: 0
+# gcode command: SET_PIN PIN=LINEAR_FWD VALUE=1
+
+[output_pin LINEAR_REV]
+pin: gpio16
+value: 0
+shutdown_value: 0
+# gcode command: SET_PIN PIN=LINEAR_REV VALUE=1
+
+# Linear actuator ADC Potentiometer Feedback:
+# Klipper supports ADC inputs, however, without writing extra functions, they are only used as thermometers.3
+# We define an extra thermometer, which will record the resistance coming from the linear actuator potentiometer directly as temperature. 
+# We'll translate this into ml of extrustion at the UI Level.
+#3.3v out referece
+[output_pin LINEAR_REF]
+pin:gpio26
+value: 1
+shutdown_value: 0
+
+#adc potentiometer configuration
+[adc_temperature LINEAR_POT]
+temperature1:0
+resistance1:0
+temperature2:100
+resistance2:11000
+
+#sensor reporting and limits
+[temperature_sensor LINEAR_EXT]
+sensor_type: LINEAR_POT
+sensor_pin:gpio27
+min_temp:000
+max_temp:100
 
 [delayed_gcode bed_mesh_init]
 initial_duration: .01
@@ -371,8 +438,6 @@ fade_start: 1
 fade_end: 10
 fade_target: 0
 
-#[filament_switch_sensor runout_sensor]
-#switch_pin: ^gpio16
 
 [firmware_retraction]
 retract_length: 2.5
@@ -385,10 +450,8 @@ unretract_extra_length: 0
 #   The length (in mm) of *additional* filament to add when
 #   unretracting.
 unretract_speed: 40
-#   The speed of unretraction, in mm/s. The default is 10 mm/s..
+#   The speed of unretraction, in mm/s. The default is 10 mm/s.
 
-#[output_pin beeper]
-#pin: EXP1_1
 ```
 
 Apply mainsail configuration
