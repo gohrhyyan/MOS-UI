@@ -299,7 +299,7 @@ horizontal_move_z: 5
 step_pin: gpio11
 dir_pin: gpio10
 enable_pin: !gpio12
-microsteps: 16
+microsteps: 256
 rotation_distance: 32
 endstop_pin: ^gpio4
 position_endstop: 259.428422
@@ -311,118 +311,81 @@ uart_pin: gpio9
 tx_pin: gpio8
 uart_address: 0
 run_current: 0.650
-#stealthchop_threshold: 999999
+stealthchop_threshold: 999999
 
 [stepper_b]
 step_pin: gpio6
 dir_pin: gpio5
 enable_pin: !gpio7
-microsteps: 16
+microsteps: 256
 rotation_distance: 32
 endstop_pin: ^gpio3
 position_endstop: 258.604547
 homing_speed: 5
+arm_length: 241.713985
 
 [tmc2209 stepper_b]
 uart_pin: gpio9
 tx_pin: gpio8
 uart_address: 2
 run_current: 0.650
-#stealthchop_threshold: 999999
+stealthchop_threshold: 999999
 
 [stepper_c]
-step_pin: gpio19
-dir_pin: gpio28
-enable_pin: !gpio2
-microsteps: 16
+step_pin: gpio14
+dir_pin: !gpio13
+enable_pin: !gpio15
+microsteps: 256
 rotation_distance: 32
 endstop_pin: ^gpio25
 position_endstop: 259.336938
 homing_speed: 5
+arm_length: 241.713985
 
 [tmc2209 stepper_c]
 uart_pin: gpio9
 tx_pin: gpio8
-uart_address: 1
+uart_address: 3
 run_current: 0.650
-#stealthchop_threshold: 999999
+stealthchop_threshold: 999999
 
 [extruder]
-step_pin: gpio14
-dir_pin: !gpio13
-enable_pin: !gpio15
-microsteps: 16
-rotation_distance: 33.500
+step_pin: gpio19
+dir_pin: gpio28
+enable_pin: !gpio2
+microsteps: 1
+rotation_distance: 8
 nozzle_diameter: 0.4
 filament_diameter: 1.75
-heater_pin: none 
-#gpio18
-#sensor_type: EPCOS 100K B57560G104F
-sensor_pin: none 
-#gpio20
-#control: pid
-#pid_Kp: 22.2
-#pid_Ki: 1.08
-#pid_Kd: 114
-min_temp: -100
-max_temp: 300
+heater_pin: gpio23
+sensor_type: CUSTOM_SENS
+sensor_pin: gpio27
+control: pid
+pid_Kp: 22.2
+pid_Ki: 1.08
+pid_Kd: 114
+min_temp: -273
+max_temp: 999
+min_extrude_temp: -273
 max_extrude_cross_section:2
 
 [tmc2209 extruder]
 uart_pin: gpio9
 tx_pin: gpio8
-uart_address: 3
-run_current: 0.800
+uart_address: 1
+run_current: 0.2
+hold_current: 0.00001
 #stealthchop_threshold: 999999
 
-
-#LINEAR ACTUATOR CONFIG
-[output_pin LINEAR_PWR]
-pin: gpio23
-value: 0
-shutdown_value: 0
-# gcode command: SET_PIN PIN=LINEAR_PWR VALUE=1
-
-[output_pin LINEAR_FWD]
-pin: gpio24
-value: 0
-shutdown_value: 0
-# gcode command: SET_PIN PIN=LINEAR_FWD VALUE=1
-
-[output_pin LINEAR_REV]
-pin: gpio16
-value: 0
-shutdown_value: 0
-# gcode command: SET_PIN PIN=LINEAR_REV VALUE=1
-
-# Linear actuator ADC Potentiometer Feedback:
-# Klipper supports ADC inputs, however, without writing extra functions, they are only used as thermometers.3
-# We define an extra thermometer, which will record the resistance coming from the linear actuator potentiometer directly as temperature. 
-# We'll translate this into ml of extrustion at the UI Level.
-#3.3v out referece
-[output_pin LINEAR_REF]
-pin:gpio26
-value: 1
-shutdown_value: 0
-
-#adc potentiometer configuration
-[adc_temperature LINEAR_POT]
-temperature1:0
+[adc_temperature CUSTOM_SENS]
+temperature1:-273
 resistance1:0
 temperature2:100
-resistance2:11000
-
-#sensor reporting and limits
-[temperature_sensor LINEAR_EXT]
-sensor_type: LINEAR_POT
-sensor_pin:gpio27
-min_temp:000
-max_temp:100
+resistance2:99999999999
 
 [delayed_gcode bed_mesh_init]
 initial_duration: .01
-gcode:
-  BED_MESH_PROFILE LOAD=default
+gcode: BED_MESH_PROFILE LOAD=default
   
 [bed_mesh]
 speed: 20
