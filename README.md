@@ -1,8 +1,3 @@
-![image](https://github.com/user-attachments/assets/7b582986-fb74-4521-944c-28e4e07a52cd)
-
-
-
-
 # ic-designstudy-groupproj DEPLOYMENT STEPS
 # Flash klipper firmware to Mainboard.
 Unplug everything from mainboard and apply 2 jumpers as shown:
