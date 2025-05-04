@@ -12,6 +12,7 @@ export const usePrinterState = (socket, sendMessage) => {
     estimatedTime: 0,        // Estimated total time in seconds
   });
 
+  const [klippyState, setKlippyState] = useState("Loading")
 
   // Function to update printer state - single source of truth
   // Takes in a partial state object and merges it with the current state
@@ -32,6 +33,7 @@ export const usePrinterState = (socket, sendMessage) => {
 
       // Query printer objects to get current print status
       const printerObjectsResponse = await sendMessage("printer.objects.query", {"objects": { "print_stats": null }});
+      setKlippyState(serverInfoResponse.klippy_state)
 
       // Update printer state with initial values
       updatePrinterState({printStatus: printerObjectsResponse.status.print_stats.state, 
@@ -58,7 +60,13 @@ export const usePrinterState = (socket, sendMessage) => {
   // Process WebSocket messages from the printer
   const processWebSocketUpdate = useCallback((message) => {
     // Check message type and update state accordingly
-    if (message.method === "notify_status_update") {
+    if (message.method?.startsWith("notify_klippy_")) {
+      // Handle Klippy state updates (ready, shutdown, etc.)
+      const klippyState = message.method.split("_").pop();
+      setKlippyState(klippyState);
+    }
+    
+    else if (message.method === "notify_status_update") {
       // Handle status updates (progress, temperatures, etc.)
       const statusData = message.params[0];
       if (statusData.print_stats) {
@@ -126,6 +134,7 @@ export const usePrinterState = (socket, sendMessage) => {
 
   return {
     printerState,
+    klippyState,
     processWebSocketUpdate,
     refreshState
   };

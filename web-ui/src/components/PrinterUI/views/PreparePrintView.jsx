@@ -191,7 +191,7 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
       <div className="w-full aspect-square rounded-lg mb-2 relative">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-opacity-75 rounded-lg">
-            <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-8 w-8 border-4 border-t-transparent border-[var(--text-color)] rounded-full"></div>
           </div>
         )}
         <div 
@@ -218,7 +218,7 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
       >
         {isLoading ? (
           <>
-            <div className="animate-spin h-5 w-5 border-2 border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-5 w-5 border-2 border-t-transparent border-[var(--text-color)] rounded-full"></div>
             Preparing...
           </>
         ) : (

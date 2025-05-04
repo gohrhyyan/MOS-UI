@@ -6,6 +6,7 @@ import HistoryView from './views/HistoryView';
 import Toast from './common/Toast'; 
 import useMoonrakerSocket from '../hooks/useMoonrakerSocket'; 
 import { usePrinterState } from '../hooks/usePrinterState';
+import ResponsiveContainer from './common/ResponsiveContainer';
 
 const PrinterUI = () => {
 
@@ -22,7 +23,7 @@ const PrinterUI = () => {
     const { sendMessage, socket, error } = useMoonrakerSocket((data) => relayFunctionRef.current(data));
 
     // Initialize printer state management
-    const { printerState, processWebSocketUpdate, refreshState } = usePrinterState(socket, sendMessage);
+    const { printerState, klippyState, processWebSocketUpdate, refreshState } = usePrinterState(socket, sendMessage);
 
     // set up the relay function once processWebSocketUpdate is available
     useEffect(() => {
@@ -41,13 +42,13 @@ const PrinterUI = () => {
 
     // Update the view based on printer state changes
     useEffect(() => {
-        if (printerState.printStatus === 'printing' || printerState.printStatus === 'paused') {
+        if (klippyState == 'ready' && (printerState.printStatus === 'printing' || printerState.printStatus === 'paused')) {
             setSelectedView('printing');
         }
         else {
             setSelectedView('home');
         }
-    }, [printerState.printStatus]);
+    }, [klippyState,printerState.printStatus]);
 
     // Refresh state when socket connection is established
     useEffect(() => {
@@ -62,10 +63,11 @@ const PrinterUI = () => {
         <div className="h-screen flex flex-col bg-inherit overflow-x-hidden">
             {/* Conditional rendering of views based on selectedView state */}
             {/* Only the selected view will be rendered */}
-            
             {/* Home view - shown when selectedView is 'home' */}
             {selectedView === 'home' && (
-                <HomeView     
+                <HomeView
+                    printerState = {printerState}
+                    klippyState = {klippyState}
                     setSelectedView = {setSelectedView}
                     showToast = {showToast}
                     selectedFilePath = {selectedFilePath}
