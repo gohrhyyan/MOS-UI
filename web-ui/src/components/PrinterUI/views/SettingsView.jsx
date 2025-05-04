@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
+import { Command } from 'lucide-react';
 
 // Main SettingsView component
 const SettingsView = ({printerState, klippyState, setSelectedView, showToast, sendMessage, socket}) => {
@@ -10,6 +11,12 @@ const SettingsView = ({printerState, klippyState, setSelectedView, showToast, se
 const handleRestart = async () => {
   const response = await sendMessage("printer.firmware_restart");
 };
+
+const sendGCode = async (GCode) => {
+  const response = await sendMessage("printer.gcode.script", {"params": {
+        "script": `${GCode}`
+    }})
+}
 
   return (
     <ResponsiveContainer className="flex flex-col items-center justify-center p-6 gap-6">
@@ -32,6 +39,14 @@ const handleRestart = async () => {
       >
         Restart Firmware
       </button>
+
+      <button
+        onClick={() => sendGCode('G28')}
+        className="flex items-center justify-center gap-2 rounded-lg px-6 py-3 transition-colors mb-4"
+      >
+       Home Axes
+      </button>
+
     </ResponsiveContainer>
   )
 };
