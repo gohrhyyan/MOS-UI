@@ -22,6 +22,7 @@ const [sliceFile, setSliceFile] = useState(null);
 const fileInputRef = useRef(null);
 const [sliceProgress, setSliceProgress] = useState(0);
 const [sliceStatus, setSliceStatus] = useState('');
+const [speedMode, setSpeedMode] = useState('normal');
 
 /*
 File Handlers
@@ -56,7 +57,7 @@ const { uploadFile, isUploading } = useFileUpload({
   handleFileUploadSuccess
 });
 
-const speedMultiplier = 2
+const speedMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 2 : 4;
 
 // sample configs
 // https://github.com/GridSpace/grid-apps/tree/master/src/cli
@@ -87,14 +88,14 @@ const handleSlice = (file) => {
           .then(eng => {
             console.log('File loaded successfully, setting process parameters');
             return eng.setProcess({
-              sliceHeight: 0.1,         // layer height in mm
-              firstSliceHeight: 0.1,
+              sliceHeight: 0.1 * speedMultiplier,         // layer height in mm
+              firstSliceHeight: 0.1 * speedMultiplier,
               sliceShells: 2,            // Number of outer walls
               sliceTopLayers: 2,         // Solid top layers
               sliceBottomLayers: 2,      // Solid bottom layers
               sliceFillSparse: 0.25,     // Infill density 0 to 1
 
-              sliceSupportEnable: false, // Enable support structures (false = no supports)
+              sliceSupportEnable: true, // Enable support structures (false = no supports)
               sliceSupportDensity: 0.25,  // how much supports to use 0 to 1
 
               outputFeedrate: 50 * speedMultiplier,     // Default printing speed (mm/s)
@@ -165,6 +166,7 @@ const handleSlice = (file) => {
 
 // File input handler
 const handleFileInput = (e) => {
+  console.log("handling file input")
   const file = e.target.files?.[0];
   //file is already sliced
   if (file && file.name.toLowerCase().endsWith('.gcode')) {
@@ -172,6 +174,7 @@ const handleFileInput = (e) => {
   }
   //file needs slicing
   else if (file.name.toLowerCase().endsWith('.stl') || file.name.toLowerCase().endsWith('.obj') || file.name.toLowerCase().endsWith('.3mf')) {
+    console.log("needs slicing")
     setSliceFile(file);
     setShowSliceModal(true);
   }
@@ -193,6 +196,31 @@ const SliceProgressBar = ({ progress, status }) => (
   </div>
 </div>
 )
+
+const SpeedToggle = ({ speedMode, setSpeedMode }) => (
+  <div className="flex justify-center mb-4">
+    <div className="inline-flex rounded-lg p-1" style={{ backgroundColor: 'var(--button-background)' }}>
+      <button
+        className={`px-4 py-2 rounded-md text-sm font-medium ${speedMode === 'normal' ? 'bg-blue-500 text-white' : 'text-[var(--text-color)]'}`}
+        onClick={() => setSpeedMode('normal')}
+      >
+        Normal
+      </button>
+      <button
+        className={`px-4 py-2 rounded-md text-sm font-medium ${speedMode === 'fast' ? 'bg-blue-500 text-white' : 'text-[var(--text-color)]'}`}
+        onClick={() => setSpeedMode('fast')}
+      >
+        Fast
+      </button>
+      <button
+        className={`px-4 py-2 rounded-md text-sm font-medium ${speedMode === 'insane' ? 'bg-blue-500 text-white' : 'text-[var(--text-color)]'}`}
+        onClick={() => setSpeedMode('insane')}
+      >
+        Insane
+      </button>
+    </div>
+  </div>
+);
 
   /*
   HTML
@@ -234,7 +262,7 @@ const SliceProgressBar = ({ progress, status }) => (
 
         <div className="w-full flex items-center justify-center relative">
           <button 
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => {fileInputRef.current?.click()}}
             className={`
               flex flex-col items-center justify-center gap-2 rounded-lg px-6 py-3 w-48
             `}
@@ -276,7 +304,24 @@ const SliceProgressBar = ({ progress, status }) => (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl" style={{ backgroundColor: 'var(--background-color)', color: 'var(--text-color)' }}>
             <div className="p-6">
-              <h2 className="text-xl font-bold mb-2">{sliceFile?.name}</h2>            
+              <h2 className="text-xl font-bold mb-2">{sliceFile?.name}</h2>
+              
+              {/* Speed Toggle */}
+              <SpeedToggle speedMode={speedMode} setSpeedMode={setSpeedMode} />
+              
+              {/* Insane Mode Warning */}
+              {speedMode === 'insane' && (
+                <div className="mb-4 text-sm">
+                  Are you sure you want to push the limits? This will cause accelerated wear of the motors, drivers and frame.
+                </div>
+              )}
+
+              {speedMode === 'fast' && (
+                <div className="mb-4 text-sm">
+                  Increasing speed may affect print quality.
+                </div>
+              )}
+              
               {/* Simple Progress Bar */}
               {sliceProgress > 0 && (
                 <SliceProgressBar 
@@ -285,22 +330,29 @@ const SliceProgressBar = ({ progress, status }) => (
                 />
               )}
               
-              <div className="flex justify-end gap-4 mt-6">
+              <div className={`flex ${speedMode === 'insane' ? 'flex-col items-end gap-2 w-full' : 'justify-end gap-4'} mt-6`}>
                 <button
-                  onClick={() => setShowSliceModal(false)}
-                  className="px-4 py-2 rounded-lg"
-                  style={{ backgroundColor: 'red' }}
+                  onClick={() => {setShowSliceModal(false);
+                    setSliceFile(null);
+                    fileInputRef.current.value = null;}}
+                  className={`${speedMode === 'insane' ? 'bg-blue-500 text-white w-full': 'sm:w-auto'} px-4 py-2 rounded-lg`}
                   disabled={sliceProgress > 0 && sliceProgress < 100}
+                  style={{ 
+                    opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 
+                  }}
                 >
-                  Cancel
+                  {speedMode === 'insane' ? 'No, I want my Mommy.' : 'Cancel'}
                 </button>
+
                 <button
                   onClick={() => handleSlice(sliceFile)}
-                  className="px-4 py-2 rounded-lg"
-                  style={{ backgroundColor: 'var(--button-background)' }}
+                  className={`${speedMode === 'insane' ? 'bg-red-500 w-full' : 'bg-blue-500 sm:w-auto'} text-white px-4 py-2 rounded-lg`}
+                  style={{ 
+                    opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 
+                  }}
                   disabled={sliceProgress > 0 && sliceProgress < 100}
                 >
-                  Slice
+                  {speedMode === 'insane' ? 'Yes, bring it on!' : 'Slice'}
                 </button>
               </div>
             </div>
