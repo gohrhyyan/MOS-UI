@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
-import { Command } from 'lucide-react';
 
 // Main SettingsView component
 const SettingsView = ({printerState, klippyState, setSelectedView, showToast, sendMessage, socket}) => {
@@ -13,9 +12,9 @@ const handleRestart = async () => {
 };
 
 const sendGCode = async (GCode) => {
-  const response = await sendMessage("printer.gcode.script", {"params": {
-        "script": `${GCode}`
-    }})
+  const response = await sendMessage("printer.gcode.script",{
+        "script": `${GCode}`}
+    )
 }
 
   return (
