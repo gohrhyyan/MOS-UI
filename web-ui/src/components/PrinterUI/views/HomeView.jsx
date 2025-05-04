@@ -54,6 +54,10 @@ const [sliceStatus, setSliceStatus] = useState('');
     handleFileUploadSuccess
   });
 
+  // sample configs
+  // https://github.com/GridSpace/grid-apps/tree/master/src/cli
+  // https://github.com/GridSpace/grid-apps/blob/master/src/cli/kiri-fdm-process.json
+  // https://github.com/GridSpace/grid-apps/blob/master/src/cli/kiri-fdm-device.json
   const handleSlice = (file) => {
     console.log('Kiri available?', typeof kiri !== 'undefined');
       // Use kiri:moto to slice the file
@@ -79,16 +83,61 @@ const [sliceStatus, setSliceStatus] = useState('');
             .then(eng => {
               console.log('File loaded successfully, setting process parameters');
               return eng.setProcess({
-                sliceShells: 1,
-                sliceFillSparse: 0.25,
-                sliceTopLayers: 2,
-                sliceBottomLayers: 2
+                sliceHeight: 0.25,         // layer height in mm
+                firstSliceHeight: 0.25,
+                sliceShells: 2,            // Number of outer walls
+                sliceFillSparse: 0.25,     // Infill density 0 to 1
+                sliceTopLayers: 2,         // Solid top layers
+                sliceBottomLayers: 2,      // Solid bottom layers
+                sliceSupportEnable: false, // Enable support structures (false = no supports)
+                sliceSupportDensity: 0.25,  // how much supports to use 0 to 1
+
+                firstLayerRate: 10,    // Print speed for first layer (mm/s)// Print speed for first layer (mm/s)
+                sliceFillRate: 0,      // Infill printing speed (mm/s, 0 = use default)
+                firstLayerFillRate: 35, // Infill speed for first layer (mm/s)
+                outputFeedrate: 50,   // Default printing speed (mm/s)
+                outputFinishrate: 50, // Finishing pass speed (mm/s)
+                outputSeekrate: 80,   // Non-printing movement speed (mm/s)
+                outputRetractSpeed: 30, // Retraction speed (mm/s)
+                outputMinSpeed: 10,   // Minimum printing speed (mm/s)
+                outputRetractDwell: 30, // Dwell time after retraction (ms)             
               });
             })
-            .then(eng => {return eng.setDevice({
-                gcodePre: ["M82", "M104 S220"],
-                gcodePost: ["M107"]
-              });})
+            .then(eng => {return eng.setMode("FDM");})
+            .then(eng => {
+              return eng.setDevice({
+                deviceType: "FDM",      // FDM for delta printers
+                originCenter: true,     // Place origin at bed center (critical for delta printers)
+                bedWidth: 150,          // Circular bed diameter (mm)
+                bedDepth: 150,          // Same as bedWidth for circular bed
+                resolutionX: 0.1,       // X-axis resolution (mm, typical for Marlin)
+                resolutionY: 0.1,       // Y-axis resolution (mm, typical for Marlin)
+                deviceZMax: 300,        // Maximum Z height (mm, same as maxHeight)
+                gcodeTime: true,        // Include time estimation in G-code
+                maxHeight: 300,         // Maximum build height (mm)
+                round: true,            // Indicate circular bed (delta-specific)
+                gcodeLayer: false,      // Disable layer comments in G-code (optional, set to true for debugging)
+                gcodePre: [
+                  "G28",                // Home all axes (delta-specific)
+                  "G90",                // Absolute positioning
+                  "M82",                // Absolute E steps (extruder)
+                  "G1 Z5 F3000"         // Move to initial position (5mm above bed)
+                ],
+                gcodePost: [
+                  "M104 S0",            // Turn off extruder
+                  "M84"                 // Disable motors
+                ],
+                nozzle: [0.4],          // Nozzle diameter (mm)
+                filament: 1.75,         // Filament diameter (mm)
+                gcodeFlavor: "Marlin",   // Firmware flavor (Marlin for most delta printers)
+                extruders: [{
+                "extFilament": 1.75,
+                "extNozzle": 0.4,
+                "extOffsetX": 0,
+                "extOffsetY": 0
+            }]
+              });
+            })
             .then(eng => {return eng.slice();})
             .then(eng => {return eng.prepare();})
             .then(eng => {return eng.export();})
