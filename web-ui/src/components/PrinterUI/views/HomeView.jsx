@@ -254,7 +254,9 @@ const SliceProgressBar = ({ progress, status }) => (
           />
 
           <div className="absolute right-0 flex flex-col gap-4">
-            <button className="p-2 rounded-full">
+            <button onClick={() => setSelectedView('settings')}
+                    className="p-2 rounded-full" 
+            >
               <Settings className="w-6 h-6" />
             </button>
             <button 

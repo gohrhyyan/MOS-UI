@@ -3,6 +3,7 @@ import HomeView from './views/HomeView';
 import PreparePrintView from './views/PreparePrintView';
 import PrintingView from './views/PrintingView';
 import HistoryView from './views/HistoryView';
+import SettingsView from './views/SettingsView'
 import Toast from './common/Toast'; 
 import useMoonrakerSocket from '../hooks/useMoonrakerSocket'; 
 import { usePrinterState } from '../hooks/usePrinterState';
@@ -74,6 +75,17 @@ const PrinterUI = () => {
                     setSelectedFilePath = {setSelectedFilePath}
                     currentFiles = {currentFiles}
                     setCurrentFiles = {setCurrentFiles}
+                    sendMessage = {sendMessage}
+                    socket = {socket}
+                />
+            )}
+
+            {selectedView === 'settings' && (
+                <SettingsView
+                    printerState = {printerState}
+                    klippyState = {klippyState}
+                    setSelectedView = {setSelectedView}
+                    showToast = {showToast}
                     sendMessage = {sendMessage}
                     socket = {socket}
                 />
