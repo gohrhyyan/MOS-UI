@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { Upload, Settings, History } from 'lucide-react';
+import { Upload, Settings, History, Camera } from 'lucide-react';
 import MOSLogo from '../../../assets/MOS.png';
 import PrinterImage from '../../../assets/Printer.png';
 import ResponsiveContainer from '../common/ResponsiveContainer';
@@ -281,7 +281,13 @@ const SpeedToggle = ({ speedMode, setSpeedMode }) => (
             className="hidden"
           />
 
-          <div className="absolute right-0 flex flex-col gap-4">
+          
+        <div className="absolute right-0 flex flex-col gap-4 bottom-0">
+          <button 
+                    className="p-2 rounded-full" 
+            >
+              <Camera className="w-6 h-6" />
+            </button>
             <button onClick={() => setSelectedView('settings')}
                     className="p-2 rounded-full" 
             >
