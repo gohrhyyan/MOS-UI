@@ -283,7 +283,7 @@ const SpeedToggle = ({ speedMode, setSpeedMode }) => (
 
           
         <div className="absolute right-0 flex flex-col gap-4 bottom-0">
-          <button 
+          <button onClick={() => setSelectedView('camera')}
                     className="p-2 rounded-full" 
             >
               <Camera className="w-6 h-6" />

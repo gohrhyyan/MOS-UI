@@ -4,6 +4,7 @@ import PreparePrintView from './views/PreparePrintView';
 import PrintingView from './views/PrintingView';
 import HistoryView from './views/HistoryView';
 import SettingsView from './views/SettingsView'
+import CameraView from './views/CameraView'
 import Toast from './common/Toast'; 
 import useMoonrakerSocket from '../hooks/useMoonrakerSocket'; 
 import { usePrinterState } from '../hooks/usePrinterState';
@@ -90,8 +91,16 @@ const PrinterUI = () => {
                     socket = {socket}
                 />
             )}
+
+            {/* Printing view - shown when selectedView is 'printing' */}
+            {selectedView === 'camera' && (
+                <CamraView
+                    setSelectedView={setSelectedView}
+                    printerState={printerState}
+                />
+            )}
             
-            {/* Print view - shown when selectedView is 'prepare' */}
+            {/* Prepare view - shown when selectedView is 'prepare' */}
             {selectedView === 'prepare' && (
                 <PreparePrintView 
                     setSelectedView={setSelectedView}
@@ -102,7 +111,7 @@ const PrinterUI = () => {
                 />
             )}
             
-            {/* Status view - shown when selectedView is 'printing' */}
+            {/* Printing view - shown when selectedView is 'printing' */}
             {selectedView === 'printing' && (
                 <PrintingView
                     setSelectedView={setSelectedView}

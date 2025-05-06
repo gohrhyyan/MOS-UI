@@ -1,19 +1,19 @@
 // src/components/PrinterUI/views/PrintingView.jsx
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Square } from 'lucide-react';
-import gif from '../../../assets/3dprinting.gif';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
 
+const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+
 // Component for showing the print preview with animation
-const PrintPreview = ({ gif, isPaused, filename }) => (
+const PrintPreview = ({ filename }) => (
   <div className="mb-6">
     <div className="w-full aspect-square rounded-lg mb-2">
       <img 
-        src={gif}
+        src={`${protocol}//${window.location.host}/stream`}
         alt="Print Livestream" 
         className="w-full h-full object-cover rounded-lg"
-        style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
       />
     </div>
     <div className="text-lg">{filename || 'Unknown File'}</div>
@@ -170,8 +170,6 @@ const PrintingView = ({ setSelectedView, printerState, sendMessage, refreshState
       <div className="flex-1 flex flex-col p-4">
         {/* Print preview showing the GIF and filename */}
         <PrintPreview 
-          gif={gif} 
-          isPaused={isPaused} 
           filename={printerState.filename}
         />
         
