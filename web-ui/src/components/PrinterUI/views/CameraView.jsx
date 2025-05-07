@@ -1,6 +1,8 @@
 // src/components/PrinterUI/views/PrintingView.jsx
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
+import DPad from '../common/DPad';
+
 
 const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
 
@@ -18,23 +20,29 @@ const PrintPreview = () => (
 );
 
 // Main PrintingView component
-const CameraView = ({ setSelectedView, printerState }) => {
+const CameraView = ({ setSelectedView, sendGCode, showToast}) => {
+
+  const handleBack = () => {
+    sendGCode('M84')
+    setSelectedView('home')
+  }
+
   return (
     <ResponsiveContainer>
       {/* Top bar showing the current print status */}
       <TopBar 
-        title={
-          pendingState ? 
-            (pendingState.charAt(0).toUpperCase() + pendingState.slice(1)) : 
-            (printerState.printStatus.charAt(0).toUpperCase() + printerState.printStatus.slice(1))
-        } 
-        onBack={() => setSelectedView('home')}
+        title={`Live View`} 
+        showBack={true} 
+        onBack={() => handleBack()}
       />
       
       <div className="flex-1 flex flex-col p-4">
-        {/* Print preview showing the GIF and filename */}
         <PrintPreview/>
       </div>
+      <DPad
+      sendGCode={sendGCode}
+      showToast={showToast}
+    />
     </ResponsiveContainer>
   );
 };

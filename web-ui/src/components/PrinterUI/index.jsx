@@ -8,7 +8,6 @@ import CameraView from './views/CameraView'
 import Toast from './common/Toast'; 
 import useMoonrakerSocket from '../hooks/useMoonrakerSocket'; 
 import { usePrinterState } from '../hooks/usePrinterState';
-import ResponsiveContainer from './common/ResponsiveContainer';
 
 const PrinterUI = () => {
 
@@ -41,6 +40,15 @@ const PrinterUI = () => {
         setToastMessage(message);
         setTimeout(() => setToastMessage(null), 3000);
     };
+
+    // Function Just for communicating via GCode Console.
+    const sendGCode = async (GCode) => {
+        try{
+            const response = await sendMessage("printer.gcode.script",{"script": `${GCode}`})}
+        catch(error){
+            showToast(error.message);
+        }
+    }
 
     // Update the view based on printer state changes
     useEffect(() => {
@@ -83,20 +91,20 @@ const PrinterUI = () => {
 
             {selectedView === 'settings' && (
                 <SettingsView
-                    printerState = {printerState}
                     klippyState = {klippyState}
                     setSelectedView = {setSelectedView}
-                    showToast = {showToast}
                     sendMessage = {sendMessage}
-                    socket = {socket}
+                    sendGCode = {sendGCode}
+                    showToast = {showToast}
                 />
             )}
 
             {/* Printing view - shown when selectedView is 'printing' */}
             {selectedView === 'camera' && (
-                <CamraView
+                <CameraView
                     setSelectedView={setSelectedView}
-                    printerState={printerState}
+                    sendGCode={sendGCode}
+                    showToast={showToast}
                 />
             )}
             
@@ -118,6 +126,7 @@ const PrinterUI = () => {
                     printerState={printerState}
                     sendMessage={sendMessage}
                     refreshState={refreshState}
+                    showToast={showToast}
                 />
             )}
 
