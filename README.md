@@ -1002,6 +1002,18 @@ server {
         auth_basic "Restricted Content";
         auth_basic_user_file /etc/nginx/.htpasswd;
     }
+
+
+    location /stream {
+        proxy_pass http://127.0.0.1:8080/webcam/?action=stream;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP 127.0.0.1;
+        proxy_set_header X-Forwarded-For 127.0.0.1;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+    }
+   
 }
 
 server {
