@@ -1159,6 +1159,34 @@ replace `{TELEGRAM_BOT_TOKEN}` with the <CHATID:KEY> copied from BotFather
 
 10) we'll need to install crowsnest to handle webcam streaming,
 follow instructions in https://crowsnest.mainsail.xyz/setup/installation
+```
+cd ~
+git clone https://github.com/mainsail-crew/crowsnest.git
+cd ~/crowsnest
+sudo make install
+```
+access the crowsnest config:
+```
+cd ~/printer_data/config
+sudo nano crowsnest.conf
+```
+PASTE:
+```
+[crowsnest]
+log_path: ~/printer_data/logs/crowsnest.log
+log_level: verbose
+delete_log: false
+no_proxy: false
+
+[cam 1]
+mode: camera-streamer
+enable_rtsp: false
+rtsp_port: 8554
+port: 8080
+device: /base/soc/i2c0mux/i2c@1/imx219@10
+resolution: 640x480
+max_fps: 30
+```
 
 11) Securely expose the server to the internet using Cloudflare tunnels.
 Purchase a domain on namecheap- most cost effective.
