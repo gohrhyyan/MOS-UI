@@ -156,9 +156,7 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
   */
   // Handler for starting the print
   const handlePrint = async () => {
-    try {
-      setIsLoading(true);
-      
+    try {     
       // Send command to start the print
       await sendMessage("printer.print.start", {
         "filename": filename
@@ -173,7 +171,6 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
     } catch (error) {
       console.error('Error starting print:', error);
       showToast(`Failed to start print: ${error.message}`);
-      setIsLoading(false);
     }
   };
 
@@ -213,20 +210,9 @@ const PreparePrintView = ({ setSelectedView, selectedFilePath, sendMessage, show
       </div>
       <button 
         onClick={handlePrint}
-        disabled={isLoading}
-        className="mt-auto w-full rounded-lg py-3 flex items-center justify-center gap-2"
-      >
-        {isLoading ? (
-          <>
-            <div className="animate-spin h-5 w-5 border-2 border-t-transparent border-[var(--text-color)] rounded-full"></div>
-            Preparing...
-          </>
-        ) : (
-          <>
+        className="mt-auto w-full rounded-lg py-3 flex items-center justify-center gap-2">
             <Printer className="w-5 h-5" />
             Print
-          </>
-        )}
       </button>
     </div>
 </ResponsiveContainer>

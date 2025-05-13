@@ -197,24 +197,30 @@ const SliceProgressBar = ({ progress, status }) => (
 </div>
 )
 
-const SpeedToggle = ({ speedMode, setSpeedMode }) => (
+const SpeedToggle = ({ speedMode, setSpeedMode, sliceProgress }) => (
   <div className="flex justify-center mb-4">
     <div className="inline-flex rounded-lg p-1" style={{ backgroundColor: 'var(--button-background)' }}>
       <button
         className={`px-4 py-2 rounded-md text-sm font-medium ${speedMode === 'normal' ? 'bg-blue-500 text-white' : 'text-[var(--text-color)]'}`}
         onClick={() => setSpeedMode('normal')}
+        disabled={sliceProgress > 0 && sliceProgress < 100}
+        style={{ opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 }}
       >
         Normal
       </button>
       <button
         className={`px-4 py-2 rounded-md text-sm font-medium ${speedMode === 'fast' ? 'bg-blue-500 text-white' : 'text-[var(--text-color)]'}`}
         onClick={() => setSpeedMode('fast')}
+        disabled={sliceProgress > 0 && sliceProgress < 100}
+        style={{ opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 }}
       >
         Fast
       </button>
       <button
         className={`px-4 py-2 rounded-md text-sm font-medium ${speedMode === 'insane' ? 'bg-blue-500 text-white' : 'text-[var(--text-color)]'}`}
         onClick={() => setSpeedMode('insane')}
+        disabled={sliceProgress > 0 && sliceProgress < 100}
+        style={{ opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 }}
       >
         Insane
       </button>
@@ -313,7 +319,7 @@ const SpeedToggle = ({ speedMode, setSpeedMode }) => (
               <h2 className="text-xl font-bold mb-2">{sliceFile?.name}</h2>
               
               {/* Speed Toggle */}
-              <SpeedToggle speedMode={speedMode} setSpeedMode={setSpeedMode} />
+              <SpeedToggle speedMode={speedMode} setSpeedMode={setSpeedMode} sliceProgress={sliceProgress} />
               
               {/* Insane Mode Warning */}
               {speedMode === 'insane' && (

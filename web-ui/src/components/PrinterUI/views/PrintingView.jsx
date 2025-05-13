@@ -4,9 +4,8 @@ import { Play, Pause, Square } from 'lucide-react';
 import ResponsiveContainer from '../common/ResponsiveContainer';
 import TopBar from '../common/TopBar';
 
+// Component for showing the print preview
 const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-
-// Component for showing the print preview with animation
 const PrintPreview = ({ filename }) => (
   <div className="mb-6">
     <div className="w-full aspect-square rounded-lg mb-2">
@@ -87,17 +86,38 @@ const PrintingView = ({ setSelectedView, printerState, sendMessage, refreshState
   
   // State for tracking pending pause/resume operations
   const [pendingState, setPendingState] = useState(null);
+
+  const [localElapsedTime, setLocalElapsedTime] = useState(null)
   
   // Calculate if the printer is paused based on the printer state
   const isPaused = printerState.printStatus === 'paused';
   
   // Check if there's a pending operation
   const isPending = pendingState !== null;
+
+  // Effect to sync localElapsedTime with printerState.elapsedTime
+  useEffect(() => {
+    setLocalElapsedTime(printerState.elapsedTime || 0);
+  }, [printerState.elapsedTime]);
   
+  // Effect to update localElapsedTime every second when printing
+  useEffect(() => {
+  if (isPaused || !printerState.estimatedTime) return;
+
+  const interval = setInterval(() => {
+    setLocalElapsedTime((prev) => {
+      const newTime = prev + 1; // Increment by 1 second
+      // Cap at estimatedTime to avoid overshooting
+      return newTime <= printerState.estimatedTime ? newTime : prev;
+    });
+  }, 1000);
+    return () => clearInterval(interval);
+  }, [isPaused, isPending, printerState.estimatedTime]);
+
   // Calculate progress percentage based on elapsed time and estimated time
   const calculateProgress = () => {
     if (!printerState.estimatedTime) return 0;
-    const progress = (printerState.elapsedTime / printerState.estimatedTime) * 100;
+    const progress = (localElapsedTime / printerState.estimatedTime) * 100;
     return Math.min(Math.max(progress, 0), 100); // Ensure progress is between 0-100
   };
   
@@ -105,7 +125,7 @@ const PrintingView = ({ setSelectedView, printerState, sendMessage, refreshState
   const formatRemainingTime = () => {
     if (!printerState.estimatedTime) return 'Calculating...';
     
-    const remainingSeconds = Math.max(0, printerState.estimatedTime - printerState.elapsedTime);
+    const remainingSeconds = Math.max(0, printerState.estimatedTime - localElapsedTime);
     const minutes = Math.floor(remainingSeconds / 60);
     const seconds = Math.floor(remainingSeconds % 60);
     
