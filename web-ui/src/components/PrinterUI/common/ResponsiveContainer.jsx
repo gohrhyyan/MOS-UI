@@ -1,28 +1,36 @@
 import React, { useEffect } from 'react';
 
 const ResponsiveContainer = ({ children, allowContentScroll = false }) => {
-  // This effect runs once when component mounts and sets the custom --vh variable
-  // This addresses mobile browser viewport height issues
   useEffect(() => {
-    // Calculate viewport height and set it as a CSS variable
     const setVh = () => {
-      const vh = window.innerHeight * 0.01;
+      // Use visualViewport if available, fallback to window.innerHeight
+      const vh = (window.visualViewport?.height || window.innerHeight) * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
 
-    // Call it initially
+    // Set initial height
     setVh();
 
-    // Add event listener to recalculate when window is resized
+    // Update on resize and visualViewport changes
     window.addEventListener('resize', setVh);
+    window.visualViewport?.addEventListener('resize', setVh);
 
-    // Clean up event listener when component unmounts
-    return () => window.removeEventListener('resize', setVh);
+    // Prevent body scrolling
+    document.body.style.overflow = 'hidden';
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', setVh);
+      window.visualViewport?.removeEventListener('resize', setVh);
+      document.body.style.overflow = '';
+    };
   }, []);
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col px-4 sm:px-6 relative h-[calc(var(--vh,1vh)*100)] overflow-hidden">
-      {/* We wrap the children in another div that can be scrollable or not based on the prop */}
+    <div
+      className="w-full max-w-md mx-auto flex flex-col px-4 sm:px-6 relative h-[calc(var(--vh,1vh)*100)] overflow-hidden bg-[var(--background-color)]"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+    >
       <div className={`flex flex-col flex-1 ${allowContentScroll ? 'overflow-auto' : 'overflow-hidden'}`}>
         {children}
       </div>

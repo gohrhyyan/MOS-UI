@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { Upload, Settings, History, Camera } from 'lucide-react';
+import { Upload, Settings, History, Video } from 'lucide-react';
 import MOSLogo from '../../../assets/MOS.png';
 import PrinterImage from '../../../assets/Printer.png';
 import ResponsiveContainer from '../common/ResponsiveContainer';
@@ -242,7 +242,7 @@ const SpeedToggle = ({ speedMode, setSpeedMode }) => (
             <img 
               src={MOSLogo}
               alt="MOS Printing Logo" 
-              className="h-16 w-auto"
+              className="h-16 w-auto invert-in-dark"
             />
           </div>
 
@@ -286,7 +286,7 @@ const SpeedToggle = ({ speedMode, setSpeedMode }) => (
           <button onClick={() => setSelectedView('camera')}
                     className="p-2 rounded-full" 
             >
-              <Camera className="w-6 h-6" />
+              <Video className="w-6 h-6" />
             </button>
             <button onClick={() => setSelectedView('settings')}
                     className="p-2 rounded-full" 
