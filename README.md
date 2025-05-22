@@ -1207,8 +1207,8 @@ Create a cloudflare tunnel for both websites:
 ```
 cloudflared tunnel create mobile
 cloudflared tunnel create pro
-cloudflared tunnel route dns mobile mobile.mosprinting.xyz
-cloudflared tunnel route dns pro pro.mosprinting.xyz
+cloudflared tunnel route dns mobile mobile.mosprint.site
+cloudflared tunnel route dns pro pro.mosprint.site
 ```
 To test the tunnels
 ```
@@ -1223,7 +1223,7 @@ tunnel: mobile
 credentials-file: /home/pi/.cloudflared/[UUID].json
 
 ingress:
-    - hostname: mobile.mosprinting.xyz
+    - hostname: mobile.mosprint.site
       service: http://localhost:80
     - service: http_status:404
 ```
@@ -1233,7 +1233,7 @@ tunnel:  Mainsail
 credentials-file: /home/pi/.cloudflared/[UUID].json
 
 ingress:
-    - hostname: pro.mosprinting.xyz
+    - hostname: pro.mosprint.site
       service: http://localhost:443
     - service: http_status:404
 ```
