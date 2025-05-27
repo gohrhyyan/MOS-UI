@@ -1229,7 +1229,7 @@ ingress:
 ```
 `sudo nano ~/.cloudflared/pro_config.yml`
 ```
-tunnel:  Mainsail
+tunnel:  pro
 credentials-file: /home/pi/.cloudflared/[UUID].json
 
 ingress:
