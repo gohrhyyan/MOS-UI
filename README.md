@@ -1,7 +1,8 @@
-#Acknowledgements
+# Acknowledgements
 
 •	MCU Firmware:
  o	https://github.com/bigtreetech/SKR-Pico
+ 
 •	Raspberry Pi Backend:
  o	https://github.com/mainsail-crew/mainsail
  o	https://github.com/mainsail-crew/crowsnest
@@ -11,6 +12,7 @@
  o	https://github.com/caronc/apprise
  o	https://github.com/raspberrypi/linux
  o	https://github.com/nginx/nginx
+ 
 •	Frontend:
  o	https://github.com/npm/cli
  o	https://github.com/facebook/react
