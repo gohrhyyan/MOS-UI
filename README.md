@@ -1,3 +1,47 @@
+#Acknowledgements
+
+•	MCU Firmware:
+ o	https://github.com/bigtreetech/SKR-Pico
+•	Raspberry Pi Backend:
+ o	https://github.com/mainsail-crew/mainsail
+ o	https://github.com/mainsail-crew/crowsnest
+ o	https://github.com/Arksine/moonraker
+ o	https://github.com/Klipper3d/klipper
+ o	https://github.com/cloudflare/cloudflared
+ o	https://github.com/caronc/apprise
+ o	https://github.com/raspberrypi/linux
+ o	https://github.com/nginx/nginx
+•	Frontend:
+ o	https://github.com/npm/cli
+ o	https://github.com/facebook/react
+ o	https://github.com/Sindarius/npm_gcodeviewer
+ o	https://github.com/GridSpace/grid-apps
+ o	https://lucide.dev/guide/packages/lucide-react
+ o	https://github.com/vitejs/vite
+ o	https://github.com/tailwindlabs/tailwindcss
+ o	https://github.com/BabylonJS/Babylon.js
+ o	https://github.com/babel/babel
+ o	https://github.com/mrdoob/three.js
+ o	https://github.com/postcss/autoprefixer
+ o	https://github.com/postcss/postcss
+ o	https://github.com/d3/d3
+ o	https://github.com/ArnaudBarre/eslint-plugin-react-refresh
+ o	https://github.com/jsx-eslint/eslint-plugin-react
+ o	https://github.com/eslint/eslint
+ o	https://github.com/FortAwesome/Font-Awesome
+ o	https://github.com/humanwhocodes/config-array
+ o	https://github.com/ungap/structured-clone
+ o	https://github.com/DefinitelyTyped/DefinitelyTyped
+ o	https://github.com/rollup/rollup
+ o	https://github.com/pkgjs/parseargs
+ o	https://github.com/nodelib/nodelib
+ o	https://github.com/jridgewell/gen-mapping
+ o	https://github.com/yargs/cliui
+ o	https://github.com/alloc/is
+ o	https://github.com/ampproject/amphtml
+ 
+
+
 # ic-designstudy-groupproj DEPLOYMENT STEPS
 # Flash klipper firmware to Mainboard.
 Unplug everything from mainboard and apply 2 jumpers as shown:
