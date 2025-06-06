@@ -57,7 +57,8 @@ const { uploadFile, isUploading } = useFileUpload({
   handleFileUploadSuccess
 });
 
-const speedMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 2 : 4;
+const speedMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 4 : 12;
+const layerMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 2 : 4;
 
 // sample configs
 // https://github.com/GridSpace/grid-apps/tree/master/src/cli
@@ -88,8 +89,8 @@ const handleSlice = (file) => {
           .then(eng => {
             console.log('File loaded successfully, setting process parameters');
             return eng.setProcess({
-              sliceHeight: 0.1 * speedMultiplier,         // layer height in mm
-              firstSliceHeight: 0.1 * speedMultiplier,
+              sliceHeight: 0.1 * layerMultiplier,         // layer height in mm
+              firstSliceHeight: 0.1 * layerMultiplier,
               sliceShells: 2,            // Number of outer walls
               sliceTopLayers: 2,         // Solid top layers
               sliceBottomLayers: 2,      // Solid bottom layers
@@ -118,9 +119,9 @@ const handleSlice = (file) => {
               bedDepth: 150,          // Same as bedWidth for circular bed
               resolutionX: 0.1,       // X-axis resolution (mm, typical for Marlin)
               resolutionY: 0.1,       // Y-axis resolution (mm, typical for Marlin)
-              deviceZMax: 300,        // Maximum Z height (mm, same as maxHeight)
+              deviceZMax: 120,        // Maximum Z height (mm, same as maxHeight)
               gcodeTime: true,        // Include time estimation in G-code
-              maxHeight: 300,         // Maximum build height (mm)
+              maxHeight: 120,         // Maximum build height (mm)
               round: true,            // Indicate circular bed (delta-specific)
               gcodeLayer: false,      // Disable layer comments in G-code (optional, set to true for debugging)
               gcodePre: [
@@ -130,6 +131,7 @@ const handleSlice = (file) => {
                 "G1 Z5 F3000"         // Move to initial position (5mm above bed)
               ],
               gcodePost: [
+                "G28",                // Home all axes (delta-specific)
                 "M104 S0",            // Turn off extruder
                 "M84"                 // Disable motors
               ],
