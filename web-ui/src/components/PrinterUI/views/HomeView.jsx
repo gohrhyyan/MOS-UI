@@ -59,6 +59,7 @@ const { uploadFile, isUploading } = useFileUpload({
 
 const speedMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 4 : 12;
 const layerMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 2 : 4;
+const accel = speedMode === 'normal' ? 3000 : speedMode === 'fast' ? 6000 : 10000;
 
 // sample configs
 // https://github.com/GridSpace/grid-apps/tree/master/src/cli
@@ -128,6 +129,7 @@ const handleSlice = (file) => {
                 "G28",                // Home all axes (delta-specific)
                 "G90",                // Absolute positioning
                 "M82",                // Absolute E steps (extruder)
+                `M201 X${accel} Y${accel} Z100`
                 "G1 Z5 F3000"         // Move to initial position (5mm above bed)
               ],
               gcodePost: [
