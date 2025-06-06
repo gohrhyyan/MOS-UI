@@ -88,7 +88,7 @@ const useFileUpload = ({ currentFiles, showToast, handleFileUploadSuccess }) => 
 
     } catch (error) {
       // If an error occurs, show a toast message
-      showToast(`Upload failed: ${error.message}`);
+      showToast(`${error.message}`);
       // Return early if an error occurs
       return;
     
