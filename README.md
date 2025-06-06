@@ -324,15 +324,15 @@ on_error_gcode: CANCEL_PRINT
 [printer]
 kinematics: delta
 max_velocity: 300
-max_accel: 6000
+max_accel: 3000
 max_z_velocity: 300
-delta_radius: 146.83
-print_radius: 80.0
-minimum_z_position: -5.0
+delta_radius: 75
+print_radius: 75
+minimum_z_position: 0
 square_corner_velocity: 5.0
 
 [delta_calibrate]
-radius: 75
+radius: 60
 speed: 20
 horizontal_move_z: 5
 
@@ -341,11 +341,12 @@ step_pin: gpio11
 dir_pin: gpio10
 enable_pin: !gpio12
 microsteps: 256
-rotation_distance: 32
+rotation_distance: 40
+full_steps_per_rotation: 200
 endstop_pin: ^gpio4
-position_endstop: 259.428422
+position_endstop: 120
 homing_speed: 5
-arm_length: 241.713985
+arm_length: 170
 
 [tmc2209 stepper_a]
 uart_pin: gpio9
@@ -359,11 +360,12 @@ step_pin: gpio6
 dir_pin: gpio5
 enable_pin: !gpio7
 microsteps: 256
-rotation_distance: 32
+rotation_distance: 40
+full_steps_per_rotation: 200
 endstop_pin: ^gpio3
-position_endstop: 258.604547
+position_endstop: 120
 homing_speed: 5
-arm_length: 241.713985
+arm_length: 170
 
 [tmc2209 stepper_b]
 uart_pin: gpio9
@@ -374,14 +376,15 @@ stealthchop_threshold: 999999
 
 [stepper_c]
 step_pin: gpio14
-dir_pin: !gpio13
+dir_pin: gpio13
 enable_pin: !gpio15
 microsteps: 256
-rotation_distance: 32
+rotation_distance: 40
+full_steps_per_rotation: 200
 endstop_pin: ^gpio25
-position_endstop: 259.336938
+position_endstop: 120
 homing_speed: 5
-arm_length: 241.713985
+arm_length: 170
 
 [tmc2209 stepper_c]
 uart_pin: gpio9
@@ -395,9 +398,9 @@ step_pin: gpio19
 dir_pin: gpio28
 enable_pin: !gpio2
 microsteps: 1
-rotation_distance: 8
-nozzle_diameter: 0.4
-filament_diameter: 1.75
+rotation_distance: 6
+nozzle_diameter: 0.3
+filament_diameter: 3
 heater_pin: gpio23
 sensor_type: CUSTOM_SENS
 sensor_pin: gpio27
