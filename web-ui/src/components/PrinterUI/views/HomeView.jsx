@@ -130,7 +130,6 @@ const handleSlice = (file) => {
                 "G90",                // Absolute positioning
                 "M82",                // Absolute E steps (extruder)
                 `M201 X${accel} Y${accel} Z100`,
-                "G1 Z5 F3000"         // Move to initial position (5mm above bed)
               ],
               gcodePost: [
                 "G28",                // Home all axes (delta-specific)
