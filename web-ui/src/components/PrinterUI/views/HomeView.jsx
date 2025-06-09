@@ -139,7 +139,7 @@ const handleSlice = (file) => {
               filament: 2.5,         // Filament diameter (mm)
               gcodeFlavor: "Marlin",   // Firmware flavor (Marlin for most delta printers)
               extruders: [{
-              "extFilament": 5,
+              "extFilament": 2.5,
               "extNozzle": 0.4,
               "extOffsetX": 0,
               "extOffsetY": 0
