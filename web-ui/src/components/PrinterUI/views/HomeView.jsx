@@ -90,8 +90,8 @@ const handleSlice = (file) => {
           .then(eng => {
             console.log('File loaded successfully, setting process parameters');
             return eng.setProcess({
-              sliceHeight: 0.1 * layerMultiplier,         // layer height in mm
-              firstSliceHeight: 0.1 * layerMultiplier,
+              sliceHeight: 0.2 * layerMultiplier,         // layer height in mm
+              firstSliceHeight: 0.2 * layerMultiplier,
               sliceShells: 2,            // Number of outer walls
               sliceTopLayers: 2,         // Solid top layers
               sliceBottomLayers: 2,      // Solid bottom layers
@@ -106,8 +106,8 @@ const handleSlice = (file) => {
               sliceFillRate: 0 * speedMultiplier,       // Infill printing speed (mm/s, 0 = use default)
               firstLayerFillRate: 35 * speedMultiplier, // Infill speed for first layer (mm/s)
               outputSeekrate: 80 * speedMultiplier,     // Non-printing movement speed (mm/s)
-              outputRetractSpeed: 30 * speedMultiplier, // Retraction speed (mm/s)
-              outputRetractDwell: 30 / speedMultiplier, // Dwell time after retraction (ms)   
+              outputRetractSpeed: 30, // Retraction speed (mm/s)
+              outputRetractDwell: 30, // Dwell time after retraction (ms)   
               outputMinSpeed: 10 * speedMultiplier,     // Minimum printing speed (mm/s)
             });
           })
@@ -128,8 +128,7 @@ const handleSlice = (file) => {
               gcodePre: [
                 "G28",                // Home all axes (delta-specific)
                 "G90",                // Absolute positioning
-                "M82",                // Absolute E steps (extruder)
-                `M201 X${accel} Y${accel} Z100`,
+                "M82"                // Absolute E steps (extruder)
               ],
               gcodePost: [
                 "G28",                // Home all axes (delta-specific)
