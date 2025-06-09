@@ -90,8 +90,8 @@ const handleSlice = (file) => {
           .then(eng => {
             console.log('File loaded successfully, setting process parameters');
             return eng.setProcess({
-              sliceHeight: 0.2 * layerMultiplier,         // layer height in mm
-              firstSliceHeight: 0.2 * layerMultiplier,
+              sliceHeight: 0.1 * layerMultiplier,         // layer height in mm
+              firstSliceHeight: 0.1 * layerMultiplier,
               sliceShells: 2,            // Number of outer walls
               sliceTopLayers: 2,         // Solid top layers
               sliceBottomLayers: 2,      // Solid bottom layers
@@ -136,10 +136,10 @@ const handleSlice = (file) => {
                 "M84"                 // Disable motors
               ],
               nozzle: [0.4],          // Nozzle diameter (mm)
-              filament: 1.75,         // Filament diameter (mm)
+              filament: 5,         // Filament diameter (mm)
               gcodeFlavor: "Marlin",   // Firmware flavor (Marlin for most delta printers)
               extruders: [{
-              "extFilament": 1.75,
+              "extFilament": 5,
               "extNozzle": 0.4,
               "extOffsetX": 0,
               "extOffsetY": 0
