@@ -244,9 +244,8 @@ const SpeedToggle = ({ speedMode, setSpeedMode, sliceProgress }) => (
           </ResponsiveContainer>
       ) : (
       <ResponsiveContainer>
-        <div 
-          className={`flex flex-col items-center justify-between`}>
-          <div className="w-full flex justify-center mb-4">
+        <div className="flex flex-col items-center h-full min-h-0">
+          <div className="w-full flex justify-center">
             <img 
               src={MOSLogo}
               alt="MOS Printing Logo" 
@@ -296,11 +295,11 @@ const SpeedToggle = ({ speedMode, setSpeedMode, sliceProgress }) => (
             >
               <Video className="w-6 h-6" />
             </button>
-            <button onClick={() => setSelectedView('settings')}
+            {/*<button onClick={() => setSelectedView('settings')}
                     className="p-2 rounded-full" 
             >
               <Settings className="w-6 h-6" />
-            </button>
+            </button>*/}
             <button 
               onClick={() => setSelectedView('history')}
               className="p-2 rounded-full"

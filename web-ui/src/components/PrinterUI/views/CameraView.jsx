@@ -9,7 +9,7 @@ const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
 // Component for showing the print preview with animation
 const PrintPreview = () => (
   <div className="mb-6">
-    <div className="w-full aspect-square rounded-lg mb-2">
+    <div className="w-full aspect-square rounded-lg">
       <img 
         src={`${protocol}//${window.location.host}/stream`}
         alt="Print Livestream" 
