@@ -136,10 +136,10 @@ const handleSlice = (file) => {
                 "M84"                 // Disable motors
               ],
               nozzle: [0.4],          // Nozzle diameter (mm)
-              filament: 5,         // Filament diameter (mm)
+              filament: 10,         // Filament diameter (mm)
               gcodeFlavor: "Marlin",   // Firmware flavor (Marlin for most delta printers)
               extruders: [{
-              "extFilament": 5,
+              "extFilament": 10,
               "extNozzle": 0.4,
               "extOffsetX": 0,
               "extOffsetY": 0
