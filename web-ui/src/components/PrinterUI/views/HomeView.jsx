@@ -23,6 +23,7 @@ const fileInputRef = useRef(null);
 const [sliceProgress, setSliceProgress] = useState(0);
 const [sliceStatus, setSliceStatus] = useState('');
 const [speedMode, setSpeedMode] = useState('normal');
+const [rotation, setRotation] = useState({ x: 0, y: 0 });
 
 /*
 File Handlers
@@ -88,7 +89,12 @@ const handleSlice = (file) => {
           //replace with loading
           .load(URL.createObjectURL(file))
           .then(eng => {
-            console.log('File loaded successfully, setting process parameters');
+            eng.rotate(
+              (rotation.x * Math.PI) / 180, // X-axis rotation
+              (rotation.y * Math.PI) / 180, // Y-axis rotation
+              0 // Z-axis rotation (not used)
+            );
+            console.log('File loaded successfully, setting process parameters')
             return eng.setProcess({
               sliceHeight: 0.1 * layerMultiplier,         // layer height in mm
               firstSliceHeight: 0.1 * layerMultiplier,
@@ -177,6 +183,7 @@ const handleFileInput = (e) => {
   //file needs slicing
   else if (file.name.toLowerCase().endsWith('.stl') || file.name.toLowerCase().endsWith('.obj') || file.name.toLowerCase().endsWith('.3mf')) {
     console.log("needs slicing")
+    setRotation({ x: 0, y: 0 });
     setSliceFile(file);
     setShowSliceModal(true);
   }
@@ -229,6 +236,60 @@ const SpeedToggle = ({ speedMode, setSpeedMode, sliceProgress }) => (
     </div>
   </div>
 );
+
+  const RotateControl = ({ setRotation, sliceProgress }) => (
+    <div className="mb-4">
+                <h3 className="text-lg font-small mb-2">Rotate Model</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* X-Axis Rotation */}
+                  <div className="flex flex-col items-center">
+                    <label className="text-sm mb-1">X</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setRotation({ ...rotation, x: (rotation.x - 90) % 360 })}
+                        className="px-3 py-1 rounded-lg bg-[var(--button-background) text-[var(--text-color)]"
+                        disabled={sliceProgress > 0 && sliceProgress < 100}
+                        style={{ opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 }}
+                      >
+                        -
+                      </button>
+                      <span className="text-sm font-medium">{rotation.x}°</span>
+                      <button
+                        onClick={() => setRotation({ ...rotation, x: (rotation.x + 90) % 360 })}
+                        className="px-3 py-1 rounded-lg bg-[var(--button-background) text-[var(--text-color)]"
+                        disabled={sliceProgress > 0 && sliceProgress < 100}
+                        style={{ opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 }}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  {/* Y-Axis Rotation */}
+                  <div className="flex flex-col items-center">
+                    <label className="text-sm mb-1">Y </label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setRotation({ ...rotation, y: (rotation.y - 90) % 360 })}
+                        className="px-3 py-1 rounded-lg bg-[var(--button-background) text-[var(--text-color)]"
+                        disabled={sliceProgress > 0 && sliceProgress < 100}
+                        style={{ opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 }}
+                      >
+                        -
+                      </button>
+                      <span className="text-sm font-medium">{rotation.y}°</span>
+                      <button
+                        onClick={() => setRotation({ ...rotation, y: (rotation.y + 90) % 360 })}
+                        className="px-3 py-1 rounded-lg bg-[var(--button-background) text-[var(--text-color)]"
+                        disabled={sliceProgress > 0 && sliceProgress < 100}
+                        style={{ opacity: sliceProgress > 0 && sliceProgress < 100 ? 0.5 : 1 }}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+  )
 
   /*
   HTML
@@ -322,6 +383,9 @@ const SpeedToggle = ({ speedMode, setSpeedMode, sliceProgress }) => (
               {/* Speed Toggle */}
               <SpeedToggle speedMode={speedMode} setSpeedMode={setSpeedMode} sliceProgress={sliceProgress} />
               
+              {/*Rotate Controls*/}
+              <RotateControl setRotation={setRotation} sliceProgress={sliceProgress} />
+
               {/* Insane Mode Warning */}
               {speedMode === 'insane' && (
                 <div className="mb-4 text-sm">
