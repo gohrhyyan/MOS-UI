@@ -59,7 +59,7 @@ const { uploadFile, isUploading } = useFileUpload({
 });
 
 const speedMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 4 : 12;
-const layerMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 2 : 4;
+const layerMultiplier = speedMode === 'normal' ? 2 : speedMode === 'fast' ? 4 : 5;
 const accel = speedMode === 'normal' ? 3000 : speedMode === 'fast' ? 6000 : 10000;
 
 // sample configs
