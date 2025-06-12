@@ -60,7 +60,6 @@ const { uploadFile, isUploading } = useFileUpload({
 
 const speedMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 4 : 12;
 const layerMultiplier = speedMode === 'normal' ? 2 : speedMode === 'fast' ? 4 : 5;
-const accel = speedMode === 'normal' ? 3000 : speedMode === 'fast' ? 6000 : 10000;
 
 // sample configs
 // https://github.com/GridSpace/grid-apps/tree/master/src/cli
@@ -142,10 +141,10 @@ const handleSlice = (file) => {
                 "M84"                 // Disable motors
               ],
               nozzle: [1],          // Nozzle diameter (mm)
-              filament: 2.5,         // Filament diameter (mm)
+              filament: 1.75,         // Filament diameter (mm)
               gcodeFlavor: "Marlin",   // Firmware flavor (Marlin for most delta printers)
               extruders: [{
-              "extFilament": 2.5,
+              "extFilament": 1.75,
               "extNozzle": 1,
               "extOffsetX": 0,
               "extOffsetY": 0
@@ -356,11 +355,11 @@ const SpeedToggle = ({ speedMode, setSpeedMode, sliceProgress }) => (
             >
               <Video className="w-6 h-6" />
             </button>
-            {/*<button onClick={() => setSelectedView('settings')}
+            <button onClick={() => setSelectedView('settings')}
                     className="p-2 rounded-full" 
             >
               <Settings className="w-6 h-6" />
-            </button>*/}
+            </button>
             <button 
               onClick={() => setSelectedView('history')}
               className="p-2 rounded-full"

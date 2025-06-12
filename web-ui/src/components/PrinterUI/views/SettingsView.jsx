@@ -41,13 +41,6 @@ const handleBack = () => {
         Restart Firmware
       </button>
 
-      <button
-        onClick={() => sendGCode('G28 DELTA_CALIBRATE METHOD=manual')}
-        className="flex items-center justify-center gap-2 rounded-lg px-6 py-3 transition-colors mb-4"
-      >
-       Calibrate Kinematics
-      </button>
-
     <DPad
       sendGCode={sendGCode}
       showToast={showToast}
