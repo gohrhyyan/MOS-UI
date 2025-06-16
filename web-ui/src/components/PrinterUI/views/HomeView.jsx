@@ -59,7 +59,6 @@ const { uploadFile, isUploading } = useFileUpload({
 });
 
 const speedMultiplier = speedMode === 'normal' ? 1 : speedMode === 'fast' ? 4 : 12;
-const layerMultiplier = speedMode === 'normal' ? 2 : speedMode === 'fast' ? 4 : 5;
 
 // sample configs
 // https://github.com/GridSpace/grid-apps/tree/master/src/cli
@@ -95,12 +94,12 @@ const handleSlice = (file) => {
             );
             console.log('File loaded successfully, setting process parameters')
             return eng.setProcess({
-              sliceHeight: 0.1 * layerMultiplier,         // layer height in mm
-              firstSliceHeight: 0.1 * layerMultiplier,
+              sliceHeight: 0.1,         // layer height in mm
+              firstSliceHeight: 0.5,
               sliceShells: 2,            // Number of outer walls
               sliceTopLayers: 2,         // Solid top layers
               sliceBottomLayers: 2,      // Solid bottom layers
-              sliceFillSparse: 0.25,     // Infill density 0 to 1
+              sliceFillSparse: 0.10,     // Infill density 0 to 1
 
               sliceSupportEnable: true, // Enable support structures (false = no supports)
               sliceSupportDensity: 0.25,  // how much supports to use 0 to 1
